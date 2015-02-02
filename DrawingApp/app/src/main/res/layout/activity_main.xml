@@ -4,13 +4,13 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-    <FrameLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="69dp"
-        tools:context=".MainActivity"
-        tools:ignore="MergeRootFrame" >
-    </FrameLayout>
+    <!--<FrameLayout-->
+        <!--android:id="@+id/header"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="69dp"-->
+        <!--tools:context=".MainActivity"-->
+        <!--tools:ignore="MergeRootFrame" >-->
+    <!--</FrameLayout>-->
 
     <FrameLayout
         android:id="@+id/container"

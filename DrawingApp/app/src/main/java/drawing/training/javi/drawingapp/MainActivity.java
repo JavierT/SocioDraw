@@ -1,23 +1,46 @@
 package drawing.training.javi.drawingapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity
+        implements WelcomeFragment.saveUsername {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        // TESTING PURPOSES
+//        SharedPreferences sharedPrefTesting = getPreferences(Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPrefTesting.edit();
+//        editor.remove(getString(R.string.username));
+//        editor.commit();
+        //
+
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.header, new HeaderFragment())
-                    .add(R.id.container, new WelcomeFragment())
-                    .commit();
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+
+            String username = sharedPref.getString(getString(R.string.username),"");
+            if (username.isEmpty()) // show the name screen
+            {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new WelcomeFragment())
+                        .commit();
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, new MenuFragment())
+                        .commit();
+            }
         }
+
+
     }
 
 
@@ -41,6 +64,24 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                 //
+    // Coming from the Welcome fragment to save the username in the shared preferences //
+    // and replace the fragment with the menu fragment                                 //
+    //                                                                                 //
+    /////////////////////////////////////////////////////////////////////////////////////
+    public void saveUsernameAndContinue(String name) {
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(getString(R.string.username), name);
+        editor.commit();
+
+        getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.container, new MenuFragment())
+                                    .commit();
+
     }
 
 }
