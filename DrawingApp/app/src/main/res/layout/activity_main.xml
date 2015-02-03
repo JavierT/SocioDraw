@@ -2,7 +2,9 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="fill_parent"
+        android:id="@+id/container"
+        tools:context="drawing.training.javi.drawingapp.MainActivity">
 
     <!--<FrameLayout-->
         <!--android:id="@+id/header"-->
@@ -12,14 +14,14 @@
         <!--tools:ignore="MergeRootFrame" >-->
     <!--</FrameLayout>-->
 
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        tools:context=".MainActivity"
-        tools:ignore="MergeRootFrame" >
-    </FrameLayout>
+    <!--<FrameLayout-->
+        <!--android:id="@+id/container"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="1"-->
+        <!--tools:context=".MainActivity"-->
+        <!--tools:ignore="MergeRootFrame" >-->
+    <!--</FrameLayout>-->
 
 </LinearLayout>
 
