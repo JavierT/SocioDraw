@@ -11,7 +11,9 @@ import android.widget.Button;
 import android.widget.EditText;
 
 /**
- * Created by javi on 28/01/15.
+ * Drawing App created by Javier Tresaco on 28/01/15.
+ * ${PACKAGE_NAME}
+ * Source code on:  https://github.com/JavierT/SocioDraw
  */
 public class WelcomeFragment extends Fragment {
 
@@ -28,7 +30,12 @@ public class WelcomeFragment extends Fragment {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                continueClicked(v);
+                EditText eUsername = (EditText) getActivity().findViewById(R.id.etxtName);
+                String username = eUsername.getText().toString();
+                if(!username.isEmpty()) {
+                    mCallback.saveUsernameAndContinue(username);
+
+                }
             }
         });
 
@@ -55,13 +62,4 @@ public class WelcomeFragment extends Fragment {
         public void saveUsernameAndContinue(String name);
     }
 
-    private void continueClicked(View v) {
-
-        EditText eUsername = (EditText) getActivity().findViewById(R.id.etxtName);
-        String username = eUsername.getText().toString();
-        if(!username.isEmpty()) {
-            mCallback.saveUsernameAndContinue(username);
-
-        }
-    }
 }

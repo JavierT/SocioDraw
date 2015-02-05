@@ -1,5 +1,18 @@
 package drawing.training.javi.drawingapp;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
+
 import org.alljoyn.bus.BusAttachment;
 import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.BusListener;
@@ -9,37 +22,12 @@ import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
 
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-
-public class JoinActivity extends ActionBarActivity {
+public class JoinActivity extends ActionBarActivity
+    implements ClientFragment.sendMessageListener    {
     /* Load the native alljoyn_java library */
     static {
-        System.loadLibrary("all_joyn_java");
+        System.loadLibrary("alljoyn_java");
     }
 
     private static final int MESSAGE_PING = 1;
@@ -51,28 +39,26 @@ public class JoinActivity extends ActionBarActivity {
     private String mUsername;
     private static final String TAG = "DrawingClient";
 
-    private EditText mEditText;
-    private ArrayAdapter<String> mListViewArrayAdapter;
-    private ListView mListView;
-    private Menu menu;
-
     // Handler used to make calls to Alljoyn metgods. See onCreate()
     private BusHandler mBusHandler;
 
     private ProgressDialog mDialog;
 
     private Handler mHandler = new Handler() {
+        ClientFragment cf;
+
         @Override
         public void handleMessage(Message msg) {
+            cf = (ClientFragment) getSupportFragmentManager().findFragmentById(R.id.joinContainer);
             switch (msg.what) {
                 case MESSAGE_PING:
                     String ping = (String) msg.obj;
-                    mListViewArrayAdapter.add("Ping:  " + ping);
+                    cf.newMessageToAdd("["+mUsername+"]: Ping:  " + ping);
                     break;
                 case MESSAGE_PING_REPLY:
                     String ret = (String) msg.obj;
-                    mListViewArrayAdapter.add("Reply:  " + ret);
-                    mEditText.setText("");
+                    cf.newMessageToAdd("["+mUsername+"]: Reply:  " + ret);
+                    cf.setText("");
                     break;
                 case MESSAGE_POST_TOAST:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
@@ -92,10 +78,11 @@ public class JoinActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_join);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ClientFragment())
+                    .add(R.id.joinContainer, new ClientFragment())
                     .commit();
         }
 
@@ -117,7 +104,6 @@ public class JoinActivity extends ActionBarActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_join, menu);
-        this.menu = menu;
         return true;
     }
 
@@ -145,38 +131,14 @@ public class JoinActivity extends ActionBarActivity {
         mBusHandler.sendEmptyMessage(BusHandler.DISCONNECT);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public class ClientFragment extends Fragment {
 
-        public ClientFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_join, container, false);
-
-
-            mListViewArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.message);
-            mListView= (ListView) rootView.findViewById(R.id.ListView);
-            mListView.setAdapter(mListViewArrayAdapter);
-
-            mEditText = (EditText) rootView.findViewById(R.id.EditText);
-            mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
-                    if(actionId == EditorInfo.IME_NULL && event.getAction() == KeyEvent.ACTION_UP) {
-                        // Call the remote object's Ping method
-                        Message msg = mBusHandler.obtainMessage(BusHandler.PING, view.getText().toString());
-                        mBusHandler.sendMessage(msg);
-                    }
-                    return true;
-                }
-            });
-            return rootView;
-        }
+    // Coming from the Client fragment to send a ping with the message in the args     //
+    public void sendMessage(String msg) {
+        Message reply = mBusHandler.obtainMessage(BusHandler.PING, msg);
+        mBusHandler.sendMessage(reply);
     }
+
+
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                      //

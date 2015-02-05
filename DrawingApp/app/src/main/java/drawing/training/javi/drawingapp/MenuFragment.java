@@ -13,7 +13,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 /**
- * Created by javi on 2/02/15.
+ * Drawing App created by Javier Tresaco on 2/02/15.
+ * ${PACKAGE_NAME}
+ * Source code on:  https://github.com/JavierT/SocioDraw
  */
 public class MenuFragment extends Fragment {
 
@@ -27,35 +29,37 @@ public class MenuFragment extends Fragment {
         mUsername = sharedPref.getString(getString(R.string.username),"");
 
         TextView txtWelcome = (TextView) rootView.findViewById(R.id.txtWelcome);
-        txtWelcome.setText(getString(R.id.txtWelcome) + " " + mUsername);
+        txtWelcome.setText(getString(R.string.welcome) + " " + mUsername);
 
         // Event handlers for the buttons
+        Button btnJoin = (Button) rootView.findViewById(R.id.btnJoin);
+        btnJoin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                joinGame();
+            }
+        });
+
         Button btnCreate = (Button) rootView.findViewById(R.id.btnCreate);
         btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createGame(v);
-            }
-        });
-
-        Button btnJoin = (Button) rootView.findViewById(R.id.btnCreate);
-        btnJoin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                joinGame(v);
+                createGame();
             }
         });
 
         return rootView;
     }
 
-    private void joinGame(View v) {
+    private void joinGame() {
         Intent myIntent = new Intent(getActivity(), JoinActivity.class);
         myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
         this.startActivity(myIntent);
     }
 
-    private void createGame(View v) {
-
+    private void createGame() {
+        Intent myIntent = new Intent(getActivity(), CreateActivity.class);
+        myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
+        this.startActivity(myIntent);
     }
 }

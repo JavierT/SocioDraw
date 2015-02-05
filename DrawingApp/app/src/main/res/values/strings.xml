@@ -8,11 +8,12 @@
     <string name="erase">Erase</string>
     <string name="save">Save</string>
     <string name="paint">Paint</string>
-    <string name="username"></string>
+    <string name="username">Username</string>
     <string name="welcome">Welcome</string>
     <string name="title_activity_create">Create session</string>
     <string name="title_activity_join">Join session</string>
     <string name="enter_message_hint">Enter message</string>
     <string name="action_quit">Quit</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
