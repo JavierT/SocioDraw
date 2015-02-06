@@ -4,4 +4,7 @@
     tools:context="drawing.training.javi.drawingapp.CreateActivity">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/quit"
+        android:title="@string/action_quit"
+    />
 </menu>

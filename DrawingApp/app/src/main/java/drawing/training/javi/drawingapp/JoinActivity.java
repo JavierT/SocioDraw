@@ -22,6 +22,8 @@ import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
 
+//import org.alljoyn.bus.ProxyBusObject;
+
 
 public class JoinActivity extends ActionBarActivity
     implements ClientFragment.sendMessageListener    {
@@ -40,7 +42,7 @@ public class JoinActivity extends ActionBarActivity
     private static final String TAG = "DrawingClient";
 
     // Handler used to make calls to Alljoyn metgods. See onCreate()
-    private BusHandler mBusHandler;
+    private ClientBusHandler mBusHandler;
 
     private ProgressDialog mDialog;
 
@@ -53,11 +55,12 @@ public class JoinActivity extends ActionBarActivity
             switch (msg.what) {
                 case MESSAGE_PING:
                     String ping = (String) msg.obj;
-                    cf.newMessageToAdd("["+mUsername+"]: Ping:  " + ping);
+                    cf.newMessageToAdd("You sent: " + ping);
                     break;
                 case MESSAGE_PING_REPLY:
-                    String ret = (String) msg.obj;
-                    cf.newMessageToAdd("["+mUsername+"]: Reply:  " + ret);
+//                    String ret = (String) msg.obj;
+//                    cf.newMessageToAdd("["+mUsername+"]: Reply:  " + ret);
+                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
                     cf.setText("");
                     break;
                 case MESSAGE_POST_TOAST:
@@ -87,12 +90,12 @@ public class JoinActivity extends ActionBarActivity
         }
 
         // Create the handler in a new thread to avoid blocking the UI
-        HandlerThread busThread = new HandlerThread("BusHandler");
+        HandlerThread busThread = new HandlerThread("ClientBusHandler");
         busThread.start();
-        mBusHandler = new BusHandler(busThread.getLooper());
+        mBusHandler = new ClientBusHandler(busThread.getLooper());
 
         // Connect to an Alljoyn object
-        mBusHandler.sendEmptyMessage(BusHandler.CONNECT);
+        mBusHandler.sendEmptyMessage(ClientBusHandler.CONNECT);
         mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
 
         Intent intent = getIntent();
@@ -128,13 +131,13 @@ public class JoinActivity extends ActionBarActivity
     protected void onDestroy() {
         super.onDestroy();
 
-        mBusHandler.sendEmptyMessage(BusHandler.DISCONNECT);
+        mBusHandler.sendEmptyMessage(ClientBusHandler.DISCONNECT);
     }
 
 
     // Coming from the Client fragment to send a ping with the message in the args     //
     public void sendMessage(String msg) {
-        Message reply = mBusHandler.obtainMessage(BusHandler.PING, msg);
+        Message reply = mBusHandler.obtainMessage(ClientBusHandler.PING, "["+mUsername+"]: " + msg);
         mBusHandler.sendMessage(reply);
     }
 
@@ -145,17 +148,17 @@ public class JoinActivity extends ActionBarActivity
     // BusHandler class that will handle all Alljoyn calls.                                 //
     //                                                                                      //
     //////////////////////////////////////////////////////////////////////////////////////////
-    class BusHandler extends Handler {
+    class ClientBusHandler extends Handler {
 
-        private static final String SERVICE_NAME = "org.alljoyn.bus.drawing";
+        private static final String SERVICE_NAME = "drawing.training.javi.drawing";
         private static final short CONTACT_PORT = 42;
 
         private BusAttachment mBus;
         private ProxyBusObject mProxyObj;
-        private ClientInterface mClientInterface;
+        private DrawingInterface mDrawingInterface;
 
         private int mSessionId;
-        private boolean mIsInASession;
+        //private boolean mIsInASession;
         private boolean mIsConnected;
         private boolean mIsStoppingDiscovery;
 
@@ -165,12 +168,13 @@ public class JoinActivity extends ActionBarActivity
         public static final int DISCONNECT = 3;
         public static final int PING = 4;
 
-        public BusHandler (Looper looper) {
+        public ClientBusHandler (Looper looper) {
             super(looper);
 
-            mIsInASession = false;
+            //mIsInASession = false;
             mIsConnected = false;
             mIsStoppingDiscovery = false;
+
         }
 
         @Override
@@ -190,6 +194,11 @@ public class JoinActivity extends ActionBarActivity
                     * between devices.
                     */
                     mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
+
+                    mBus.useOSLogging(true);
+                    mBus.setDebugLevel("ALL",1);
+                    mBus.setDebugLevel("ALLJON",7);
+                    mBus.setDaemonDebug("ALL",7);
 
                     // Create a bus listener class
                     mBus.registerBusListener(new BusListener() {
@@ -270,7 +279,9 @@ public class JoinActivity extends ActionBarActivity
                      * This ProxyBusObject is located at the well-known SERVICE_NAME, under path
                      * "/ClientService", uses sessionID of CONTACT_PORT, and implements the SimpleInterface.
                      */
-                        mProxyObj = mBus.getProxyBusObject(SERVICE_NAME, "/DrawingService", sessionId.value, new Class<?>[]{ClientInterface.class});
+                        mProxyObj = mBus.getProxyBusObject(SERVICE_NAME, "/DrawingService", sessionId.value, new Class<?>[]{DrawingInterface.class});
+
+                        mDrawingInterface = mProxyObj.getInterface(DrawingInterface.class);
 
                         mSessionId = sessionId.value;
                         mIsConnected = true;
@@ -299,13 +310,14 @@ public class JoinActivity extends ActionBarActivity
                 */
                 case PING: {
                     try {
-                        if (mClientInterface != null) {
+                        if (mDrawingInterface != null) {
                             sendUiMessage(MESSAGE_PING, msg.obj);
-                            String reply = mClientInterface.Ping((String) msg.obj);
-                            sendUiMessage(MESSAGE_PING_REPLY, reply);
+                            String serverName = mDrawingInterface.Ping((String) msg.obj);
+                            if(!serverName.isEmpty()) sendUiMessage(MESSAGE_PING_REPLY, "Received at " + serverName);
                         }
                     } catch (BusException ex) {
-                        logException("SimpleInterface.Ping()", ex);
+                        logException("DrawingInterface.Ping()", ex);
+                        sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
                     }
                     break;
                 }
