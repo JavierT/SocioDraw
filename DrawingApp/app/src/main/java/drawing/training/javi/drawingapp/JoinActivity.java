@@ -90,12 +90,12 @@ public class JoinActivity extends ActionBarActivity
         }
 
         // Create the handler in a new thread to avoid blocking the UI
-        HandlerThread busThread = new HandlerThread("ClientBusHandler");
+        HandlerThread busThread = new HandlerThread(ClientBusHandler.class.getSimpleName());
         busThread.start();
         mBusHandler = new ClientBusHandler(busThread.getLooper());
 
         // Connect to an Alljoyn object
-        mBusHandler.sendEmptyMessage(ClientBusHandler.CONNECT);
+        mBusHandler.sendEmptyMessage(DrawingInterface.CONNECT);
         mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
 
         Intent intent = getIntent();
@@ -131,13 +131,13 @@ public class JoinActivity extends ActionBarActivity
     protected void onDestroy() {
         super.onDestroy();
 
-        mBusHandler.sendEmptyMessage(ClientBusHandler.DISCONNECT);
+        mBusHandler.sendEmptyMessage(DrawingInterface.DISCONNECT);
     }
 
 
     // Coming from the Client fragment to send a ping with the message in the args     //
     public void sendMessage(String msg) {
-        Message reply = mBusHandler.obtainMessage(ClientBusHandler.PING, "["+mUsername+"]: " + msg);
+        Message reply = mBusHandler.obtainMessage(DrawingInterface.PING, "["+mUsername+"]: " + msg);
         mBusHandler.sendMessage(reply);
     }
 
@@ -150,8 +150,8 @@ public class JoinActivity extends ActionBarActivity
     //////////////////////////////////////////////////////////////////////////////////////////
     class ClientBusHandler extends Handler {
 
-        private static final String SERVICE_NAME = "drawing.training.javi.drawing";
-        private static final short CONTACT_PORT = 42;
+        //private static final String SERVICE_NAME = "drawing.training.javi.drawing";
+        //private static final short CONTACT_PORT = 42;
 
         private BusAttachment mBus;
         private ProxyBusObject mProxyObj;
@@ -163,10 +163,10 @@ public class JoinActivity extends ActionBarActivity
         private boolean mIsStoppingDiscovery;
 
         // Messages sent to the BusHandler from the UI
-        public static final int CONNECT = 1;
-        public static final int JOIN_SESSION = 2;
-        public static final int DISCONNECT = 3;
-        public static final int PING = 4;
+//        public static final int CONNECT = 1;
+//        public static final int JOIN_SESSION = 2;
+//        public static final int DISCONNECT = 3;
+//        public static final int PING = 4;
 
         public ClientBusHandler (Looper looper) {
             super(looper);
@@ -180,7 +180,7 @@ public class JoinActivity extends ActionBarActivity
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case CONNECT: {
+                case DrawingInterface.CONNECT: {
                     org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
 
                     /*
@@ -212,7 +212,7 @@ public class JoinActivity extends ActionBarActivity
                             * another session.
                             */
                             if (!mIsConnected) {
-                                Message msg = obtainMessage(JOIN_SESSION);
+                                Message msg = obtainMessage(DrawingInterface.JOIN_SESSION);
                                 msg.arg1 = transport;
                                 msg.obj = name;
                                 sendMessage(msg);
@@ -234,15 +234,15 @@ public class JoinActivity extends ActionBarActivity
                     *
                     * In this case, we are looking for the well-known SERVICE_NAME.
                     */
-                    status = mBus.findAdvertisedName(SERVICE_NAME);
-                    logStatus(String.format("BusAttachement.findAdvertisedName(%s)", SERVICE_NAME), status);
+                    status = mBus.findAdvertisedName(DrawingInterface.SERVICE_NAME);
+                    logStatus(String.format("BusAttachement.findAdvertisedName(%s)", DrawingInterface.SERVICE_NAME), status);
                     if (Status.OK != status) {
                         finish();
                         return;
                     }
                     break;
                 }
-                case (JOIN_SESSION): {
+                case (DrawingInterface.JOIN_SESSION): {
                     // If discovery is currently being stippped don't join any other sessions
 
                     if(mIsStoppingDiscovery) {
@@ -256,7 +256,7 @@ public class JoinActivity extends ActionBarActivity
                     * identify the created session communication channel whenever we
                     * talk to the remote side.
                     */
-                    short contactPort = CONTACT_PORT;
+                    short contactPort = DrawingInterface.CONTACT_PORT;
                     SessionOpts sessionOpts = new SessionOpts();
                     sessionOpts.transports = (short)msg.arg1;
                     Mutable.IntegerValue sessionId = new Mutable.IntegerValue();
@@ -279,7 +279,7 @@ public class JoinActivity extends ActionBarActivity
                      * This ProxyBusObject is located at the well-known SERVICE_NAME, under path
                      * "/ClientService", uses sessionID of CONTACT_PORT, and implements the SimpleInterface.
                      */
-                        mProxyObj = mBus.getProxyBusObject(SERVICE_NAME, "/DrawingService", sessionId.value, new Class<?>[]{DrawingInterface.class});
+                        mProxyObj = mBus.getProxyBusObject(DrawingInterface.SERVICE_NAME, "/DrawingService", sessionId.value, new Class<?>[]{DrawingInterface.class});
 
                         mDrawingInterface = mProxyObj.getInterface(DrawingInterface.class);
 
@@ -291,7 +291,7 @@ public class JoinActivity extends ActionBarActivity
                 }
 
                 //Release all resources acquired in the connect
-                case DISCONNECT: {
+                case DrawingInterface.DISCONNECT: {
                     mIsStoppingDiscovery = true;
                     if (mIsConnected) {
                         Status status = mBus.leaveSession(mSessionId);
@@ -308,7 +308,7 @@ public class JoinActivity extends ActionBarActivity
                 * This will also print the String that was sent to the service and the String that was
                 * received from the service to the user interface.
                 */
-                case PING: {
+                case DrawingInterface.PING: {
                     try {
                         if (mDrawingInterface != null) {
                             sendUiMessage(MESSAGE_PING, msg.obj);

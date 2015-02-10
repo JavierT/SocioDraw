@@ -3,6 +3,7 @@ package drawing.training.javi.drawingapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,7 +29,10 @@ public class MenuFragment extends Fragment {
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         mUsername = sharedPref.getString(getString(R.string.username),"");
 
+        
+
         TextView txtWelcome = (TextView) rootView.findViewById(R.id.txtWelcome);
+        //txtWelcome.setTypeface(MainActivity.handwritingFont);
         txtWelcome.setText(getString(R.string.welcome) + " " + mUsername);
 
         // Event handlers for the buttons

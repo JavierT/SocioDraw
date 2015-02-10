@@ -70,13 +70,16 @@ public class CreateActivity extends ActionBarActivity {
         Intent intent = getIntent();
         mUsername = intent.getStringExtra(getString(R.string.username));
 
-        HandlerThread busThread = new HandlerThread("ServiceBusHandler");
+        //TODO
+        // check if ServiceBusHandler.class.getName() is the same as "ServiceBusHandler".
+
+        HandlerThread busThread = new HandlerThread(ServiceBusHandler.class.getSimpleName());
         busThread.start();
         mBusHandler = new ServiceBusHandler(busThread.getLooper());
 
         //Start our service
         mDrawingService = new DrawingService();
-        mBusHandler.sendEmptyMessage(ServiceBusHandler.CONNECT);
+        mBusHandler.sendEmptyMessage(DrawingInterface.CONNECT);
 
     }
 
@@ -108,7 +111,7 @@ public class CreateActivity extends ActionBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mBusHandler.sendEmptyMessage(ServiceBusHandler.DISCONNECT);
+        mBusHandler.sendEmptyMessage(DrawingInterface.DISCONNECT);
     }
 
 
@@ -138,14 +141,14 @@ public class CreateActivity extends ActionBarActivity {
 
     // This class will handle all Alljoyn calls
     class ServiceBusHandler extends Handler {
-        private static final String SERVICE_NAME = "drawing.training.javi.drawing";
-        private static final short CONTACT_PORT = 42;
+        //private static final String SERVICE_NAME = "drawing.training.javi.drawing";
+        //private static final short CONTACT_PORT = 42;
 
         private BusAttachment mBus;
 
         // Messages sent to the BusHandler from the UI
-        public static final int CONNECT = 1;
-        public static final int DISCONNECT = 2;
+        //public static final int CONNECT = 1;
+        //public static final int DISCONNECT = 2;
 
         public ServiceBusHandler(Looper looper) {
             super(looper);
@@ -154,7 +157,7 @@ public class CreateActivity extends ActionBarActivity {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case CONNECT: {
+                case DrawingInterface.CONNECT: {
                     org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
 
                     /*
@@ -204,7 +207,7 @@ public class CreateActivity extends ActionBarActivity {
                     /*
                      * Create a new session listening on the contact port of the chat service.
                      */
-                    Mutable.ShortValue contactPort = new Mutable.ShortValue(CONTACT_PORT);
+                    Mutable.ShortValue contactPort = new Mutable.ShortValue(DrawingInterface.CONTACT_PORT);
 
                     SessionOpts sessionOpts = new SessionOpts();
                     sessionOpts.traffic = SessionOpts.TRAFFIC_MESSAGES;
@@ -225,7 +228,7 @@ public class CreateActivity extends ActionBarActivity {
                     status = mBus.bindSessionPort(contactPort, sessionOpts, new SessionPortListener() {
                         @Override
                         public boolean acceptSessionJoiner(short sessionPort, String joiner, SessionOpts sessionOpts) {
-                            return sessionPort == CONTACT_PORT;
+                            return sessionPort == DrawingInterface.CONTACT_PORT;
                         }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",
@@ -240,22 +243,22 @@ public class CreateActivity extends ActionBarActivity {
                      */
                     int flag = BusAttachment.ALLJOYN_REQUESTNAME_FLAG_REPLACE_EXISTING | BusAttachment.ALLJOYN_REQUESTNAME_FLAG_DO_NOT_QUEUE;
 
-                    status = mBus.requestName(SERVICE_NAME, flag);
-                    logStatus(String.format("BusAttachment.requestName(%s, 0x%08x)", SERVICE_NAME, flag), status);
+                    status = mBus.requestName(DrawingInterface.SERVICE_NAME, flag);
+                    logStatus(String.format("BusAttachment.requestName(%s, 0x%08x)", DrawingInterface.SERVICE_NAME, flag), status);
                     if (status == Status.OK) {
                     /*
                      * If we successfully obtain a well-known name from the bus
                      * advertise the same well-known name
                      */
-                        status = mBus.advertiseName(SERVICE_NAME, sessionOpts.transports);
-                        logStatus(String.format("BusAttachement.advertiseName(%s)", SERVICE_NAME), status);
+                        status = mBus.advertiseName(DrawingInterface.SERVICE_NAME, sessionOpts.transports);
+                        logStatus(String.format("BusAttachement.advertiseName(%s)", DrawingInterface.SERVICE_NAME), status);
                         if (status != Status.OK) {
                         /*
                          * If we are unable to advertise the name, release
                          * the well-known name from the local bus.
                          */
-                            status = mBus.releaseName(SERVICE_NAME);
-                            logStatus(String.format("BusAttachment.releaseName(%s)", SERVICE_NAME), status);
+                            status = mBus.releaseName(DrawingInterface.SERVICE_NAME);
+                            logStatus(String.format("BusAttachment.releaseName(%s)", DrawingInterface.SERVICE_NAME), status);
                             finish();
                             return;
                         }
@@ -265,7 +268,7 @@ public class CreateActivity extends ActionBarActivity {
                 }
 
                 /* Release all resources acquired in connect. */
-                case DISCONNECT: {
+                case DrawingInterface.DISCONNECT: {
                 /*
                  * It is important to unregister the BusObject before disconnecting from the bus.
                  * Failing to do so could result in a resource leak.

@@ -2,6 +2,7 @@ package drawing.training.javi.drawingapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 public class MainActivity extends ActionBarActivity
         implements WelcomeFragment.saveUsername {
 
+    public static Typeface handwritingFont;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +28,9 @@ public class MainActivity extends ActionBarActivity
 
         if (savedInstanceState == null) {
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+
+            //TODO
+            //handwritingFont = Typeface.createFromAsset(getAssets(), "handwritting.ttf");
 
             String username = sharedPref.getString(getString(R.string.username),"");
             if (username.isEmpty()) // show the name screen
