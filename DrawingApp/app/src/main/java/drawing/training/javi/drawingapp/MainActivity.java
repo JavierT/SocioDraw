@@ -1,5 +1,6 @@
 package drawing.training.javi.drawingapp;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
@@ -10,12 +11,14 @@ import android.view.MenuItem;
 
 
 public class MainActivity extends ActionBarActivity
-        implements WelcomeFragment.saveUsername {
+        implements WelcomeFragment.saveUsername, MenuFragment.createGame {
 
     public static Typeface handwritingFont;
+    private String mUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
@@ -24,24 +27,33 @@ public class MainActivity extends ActionBarActivity
 //        SharedPreferences.Editor editor = sharedPrefTesting.edit();
 //        editor.remove(getString(R.string.username));
 //        editor.commit();
-        //
+
 
         if (savedInstanceState == null) {
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 
-            //TODO
-            //handwritingFont = Typeface.createFromAsset(getAssets(), "handwritting.ttf");
+            handwritingFont = Typeface.createFromAsset(getAssets(), "FingerPaint-Regular.ttf");
 
-            String username = sharedPref.getString(getString(R.string.username),"");
-            if (username.isEmpty()) // show the name screen
+            mUsername = sharedPref.getString(getString(R.string.username),"");
+            if (mUsername.isEmpty()) // show the name screen
             {
-                getSupportFragmentManager().beginTransaction()
+                getFragmentManager().beginTransaction()
                         .add(R.id.container, new WelcomeFragment())
                         .commit();
             } else {
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.container, new MenuFragment())
-                        .commit();
+                MenuFragment newFragment = new MenuFragment();
+                Bundle args = new Bundle();
+                args.putString(getString(R.string.username), mUsername);
+                newFragment.setArguments(args);
+
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                transaction.add(R.id.container, newFragment);
+
+                // Commit the transaction
+                transaction.commit();
             }
         }
 
@@ -78,17 +90,58 @@ public class MainActivity extends ActionBarActivity
     //                                                                                 //
     /////////////////////////////////////////////////////////////////////////////////////
     public void saveUsernameAndContinue(String name) {
+        mUsername = name;
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.username), name);
+        editor.putString(getString(R.string.username), mUsername);
         editor.commit();
 
-        getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.container, new MenuFragment())
-                                    .commit();
+//        getFragmentManager().beginTransaction()
+//                .replace(R.id.container, new MenuFragment())
+//                .commit();
+        MenuFragment newFragment = new MenuFragment();
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.username), mUsername);
+        newFragment.setArguments(args);
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.container, newFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+
 
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                 //
+    // Coming from the Menu fragment to change the fragment to create options fragment //
+    //                                                                                 //
+    /////////////////////////////////////////////////////////////////////////////////////
+    public void openCreateOptionsFragment() {
+
+        CreateOptionsFragment newFragment = new CreateOptionsFragment();
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.username), mUsername);
+        newFragment.setArguments(args);
+
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.container, newFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+
+
+
+    }
 }
 
 

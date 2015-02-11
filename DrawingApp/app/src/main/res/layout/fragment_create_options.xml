@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#698de3f1"
+    android:paddingTop="15dp"
+    android:paddingBottom="75dp"
+
+    >
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:gravity="center|left"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/create_options"
+        android:id="@+id/txtCreateOptions"
+        android:paddingLeft="20dp"
+        android:layout_weight="3"
+        android:paddingRight="20dp" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:text="@string/create_as_player"
+            android:id="@+id/btnCreateAsPlayer"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:layout_marginBottom="10dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_as_player_desc"
+            android:id="@+id/txtCreatePlayerDesc"
+            android:layout_marginBottom="50dp"
+            android:gravity="left"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:text="@string/create_as_screen"
+            android:id="@+id/btnCreateAsScreen"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:layout_marginBottom="10dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_as_screen_desc"
+            android:id="@+id/txtCreateScreenDesc"
+            android:layout_marginBottom="20dp"
+            android:gravity="left"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>

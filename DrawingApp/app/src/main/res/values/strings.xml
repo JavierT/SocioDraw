@@ -14,6 +14,12 @@
     <string name="title_activity_join">Joining Imaginary Game</string>
     <string name="enter_message_hint">Enter message</string>
     <string name="action_quit">Quit</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="create_as_player">Device as player</string>
+    <string name="create_as_screen">Device as screen</string>
+    <string name="create_as_player_desc">This device will participate in the drawings</string>
+    <string name="create_as_screen_desc">This device will display only the drawings</string>
+    <string name="create_options">Please choose the role of the current device: </string>
+
+
 
 </resources>

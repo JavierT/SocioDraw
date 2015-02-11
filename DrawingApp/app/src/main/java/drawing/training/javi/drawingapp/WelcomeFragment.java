@@ -1,14 +1,15 @@
 package drawing.training.javi.drawingapp;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 /**
  * Drawing App created by Javier Tresaco on 28/01/15.
@@ -26,6 +27,13 @@ public class WelcomeFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_welcome, container, false);
 
         Button btn = (Button) rootView.findViewById(R.id.btnContinue);
+        btn.setTypeface(MainActivity.handwritingFont);
+
+        TextView txtName = (TextView) rootView.findViewById(R.id.txtName);
+        txtName.setTypeface(MainActivity.handwritingFont);
+
+        EditText etxtName = (EditText) rootView.findViewById(R.id.etxtName);
+        etxtName.setTypeface(MainActivity.handwritingFont);
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
