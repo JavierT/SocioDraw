@@ -1,13 +1,10 @@
 package drawing.training.javi.drawingapp;
 
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 
 
 public class MainActivity extends ActionBarActivity
@@ -15,6 +12,9 @@ public class MainActivity extends ActionBarActivity
 
     public static Typeface handwritingFont;
     private String mUsername;
+
+    CreateOptionsFragment createFragment;
+    MenuFragment menuFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,23 +37,18 @@ public class MainActivity extends ActionBarActivity
             mUsername = sharedPref.getString(getString(R.string.username),"");
             if (mUsername.isEmpty()) // show the name screen
             {
-                getFragmentManager().beginTransaction()
+                getSupportFragmentManager().beginTransaction()
                         .add(R.id.container, new WelcomeFragment())
                         .commit();
             } else {
-                MenuFragment newFragment = new MenuFragment();
+                menuFragment = new MenuFragment();
                 Bundle args = new Bundle();
                 args.putString(getString(R.string.username), mUsername);
-                newFragment.setArguments(args);
+                menuFragment.setArguments(args);
 
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-                // Replace whatever is in the fragment_container view with this fragment,
-                // and add the transaction to the back stack so the user can navigate back
-                transaction.add(R.id.container, newFragment);
-
-                // Commit the transaction
-                transaction.commit();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.container, menuFragment)
+                        .commit();
             }
         }
 
@@ -61,27 +56,28 @@ public class MainActivity extends ActionBarActivity
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+//
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        int id = item.getItemId();
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
+//    }
 
     /////////////////////////////////////////////////////////////////////////////////////
     //                                                                                 //
@@ -104,15 +100,10 @@ public class MainActivity extends ActionBarActivity
         args.putString(getString(R.string.username), mUsername);
         newFragment.setArguments(args);
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.container, newFragment);
-        transaction.addToBackStack(null);
-
-        // Commit the transaction
-        transaction.commit();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, newFragment)
+                .addToBackStack(null)
+                .commit();
 
 
     }
@@ -124,21 +115,21 @@ public class MainActivity extends ActionBarActivity
     /////////////////////////////////////////////////////////////////////////////////////
     public void openCreateOptionsFragment() {
 
-        CreateOptionsFragment newFragment = new CreateOptionsFragment();
-        Bundle args = new Bundle();
-        args.putString(getString(R.string.username), mUsername);
-        newFragment.setArguments(args);
+//        createFragment = new CreateOptionsFragment();
+//        Bundle args = new Bundle();
+//        args.putString(getString(R.string.username), mUsername);
+//        createFragment.setArguments(args);
+//
+//        getSupportFragmentManager().beginTransaction()
+//                .replace(R.id.container, createFragment)
+//                .addToBackStack(null)
+//                .commit();
 
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        transaction.replace(R.id.container, newFragment);
-        transaction.addToBackStack(null);
-
-        // Commit the transaction
-        transaction.commit();
-
+        // TESTING PURPOSES!!! CHANGE TO ON JOIN ACTIVITY
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, new LobbyFragment())
+                .addToBackStack(null)
+                .commit();
 
 
     }
