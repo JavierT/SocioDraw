@@ -15,7 +15,8 @@
         android:id="@+id/txtPlayerName"
         android:layout_marginRight="10dp"
         android:layout_gravity="center"
-        android:layout_weight="0.5">
+        android:layout_weight="0.5"
+        android:layout_marginLeft="10dp">
 
     </TextView>
     <ImageView
@@ -25,5 +26,6 @@
         android:layout_gravity="center"
         android:layout_weight="0"
         android:maxWidth="35dp"
-        android:maxHeight="35dp" />
+        android:maxHeight="35dp"
+        android:layout_marginRight="10dp"/>
 </LinearLayout>

@@ -22,17 +22,19 @@ import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 //import org.alljoyn.bus.ProxyBusObject;
 
 
-public class JoinActivity extends ActionBarActivity
-    implements ClientFragment.sendMessageListener    {
+public class JoinActivity extends ActionBarActivity {
     /* Load the native alljoyn_java library */
     static {
         System.loadLibrary("alljoyn_java");
     }
 
-    private static final int MESSAGE_PING = 1;
+    private static final int MESSAGE_SET_PLAYERS= 1;
     private static final int MESSAGE_PING_REPLY = 2;
     private static final int MESSAGE_POST_TOAST = 3;
     private static final int MESSAGE_START_PROGRESS_DIALOG = 4;
@@ -45,23 +47,23 @@ public class JoinActivity extends ActionBarActivity
     private ClientBusHandler mBusHandler;
 
     private ProgressDialog mDialog;
+    private LobbyFragment mLobbyFragment;
+    private ArrayList<Player> mPlayersConnected;
 
     private Handler mHandler = new Handler() {
-        ClientFragment cf;
+
 
         @Override
         public void handleMessage(Message msg) {
-            cf = (ClientFragment) getSupportFragmentManager().findFragmentById(R.id.joinContainer);
             switch (msg.what) {
-                case MESSAGE_PING:
-                    String ping = (String) msg.obj;
-                    cf.newMessageToAdd("You sent: " + ping);
+                case MESSAGE_SET_PLAYERS:
+                    mLobbyFragment.setPlayers(mPlayersConnected);
                     break;
                 case MESSAGE_PING_REPLY:
 //                    String ret = (String) msg.obj;
 //                    cf.newMessageToAdd("["+mUsername+"]: Reply:  " + ret);
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
-                    cf.setText("");
+                    //cf.setText("");
                     break;
                 case MESSAGE_POST_TOAST:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
@@ -78,14 +80,17 @@ public class JoinActivity extends ActionBarActivity
         }
     };
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_join);
         if (savedInstanceState == null) {
+            mLobbyFragment = new LobbyFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.joinContainer, new ClientFragment())
+                    .add(R.id.joinContainer, mLobbyFragment)
                     .commit();
         }
 
@@ -136,10 +141,10 @@ public class JoinActivity extends ActionBarActivity
 
 
     // Coming from the Client fragment to send a ping with the message in the args     //
-    public void sendMessage(String msg) {
-        Message reply = mBusHandler.obtainMessage(DrawingInterface.PING, "["+mUsername+"]: " + msg);
-        mBusHandler.sendMessage(reply);
-    }
+//    public void sendMessage(String msg) {
+//        Message reply = mBusHandler.obtainMessage(DrawingInterface.PING, mUsername);
+//        mBusHandler.sendMessage(reply);
+//    }
 
 
 
@@ -245,7 +250,7 @@ public class JoinActivity extends ActionBarActivity
                 case (DrawingInterface.JOIN_SESSION): {
                     // If discovery is currently being stippped don't join any other sessions
 
-                    if(mIsStoppingDiscovery) {
+                    if(mIsStoppingDiscovery || mIsConnected) {
                         break;
                     }
                     /*
@@ -286,6 +291,19 @@ public class JoinActivity extends ActionBarActivity
                         mSessionId = sessionId.value;
                         mIsConnected = true;
                         mHandler.sendEmptyMessage(MESSAGE_STOP_PROGRESS_DIALOG);
+
+
+                        try {
+                            if(mDrawingInterface.newPlayerConnected(mUsername)) {
+                                // SEND A READY TO MYSELF TO FILL THE UI.
+                                Message reply = obtainMessage(DrawingInterface.READY, mUsername);
+                                sendMessage(reply);
+                            }
+                        } catch (BusException e) {
+                            logException("DrawingInterface.newPlayerConnected()", e);
+                            finish();
+                            return;
+                        }
                     }
                     break;
                 }
@@ -302,22 +320,20 @@ public class JoinActivity extends ActionBarActivity
                     break;
                 }
 
-                /*
-                * Call the service's Ping method through the ProxyBusObject.
-                *
-                * This will also print the String that was sent to the service and the String that was
-                * received from the service to the user interface.
-                */
-                case DrawingInterface.PING: {
+                case DrawingInterface.READY: {
                     try {
                         if (mDrawingInterface != null) {
-                            sendUiMessage(MESSAGE_PING, msg.obj);
-                            String serverName = mDrawingInterface.Ping((String) msg.obj);
-                            if(!serverName.isEmpty()) sendUiMessage(MESSAGE_PING_REPLY, "Received at " + serverName);
+                            //sendUiMessage(MESSAGE_PING, msg.obj);
+                            //String serverName = mDrawingInterface.Ping((String) msg.obj);
+                            //if(!serverName.isEmpty()) sendUiMessage(MESSAGE_PING_REPLY, "Received at " + serverName);
+                            Player[] reply = mDrawingInterface.getPlayers();
+
+                            mPlayersConnected = new ArrayList<>(Arrays.asList(reply));
+                            mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
                         }
                     } catch (BusException ex) {
-                        logException("DrawingInterface.Ping()", ex);
-                        sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
+                        logException("DrawingInterface.READY()", ex);
+                        //sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
                     }
                     break;
                 }

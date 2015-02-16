@@ -17,6 +17,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 
 public class LobbyFragment extends Fragment {
 
@@ -31,12 +33,6 @@ public class LobbyFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_lobby, container, false);
 
-        String[] playerList = new String[] { "Android", "iPhone", "WindowsMobile",
-                "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-                "Linux", "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux",
-                "OS/2", "Ubuntu", "Windows7", "Max OS X", "Linux", "OS/2",
-                "Android", "iPhone", "WindowsMobile" };
-
         TextView txt = (TextView) rootView.findViewById(R.id.txtLobby);
         txt.setTypeface(MainActivity.handwritingFont);
         txt = (TextView) rootView.findViewById(R.id.txtLobbyColor);
@@ -48,10 +44,6 @@ public class LobbyFragment extends Fragment {
         btn.setTypeface(MainActivity.handwritingFont);
         btn = (Button) rootView.findViewById(R.id.btnLobbyReady);
         btn.setTypeface(MainActivity.handwritingFont);
-
-        mListViewArrayAdapter = new PlayerArrayAdapter(getActivity(), playerList);
-        mListView = (ListView) rootView.findViewById(R.id.lvPlayers);
-        mListView.setAdapter(mListViewArrayAdapter);
 
         // Color picker
         LinearLayout paintLayout = (LinearLayout)rootView.findViewById(R.id.paint_colors);
@@ -71,6 +63,8 @@ public class LobbyFragment extends Fragment {
         rootView.findViewById(R.id.ibColor5).setOnClickListener(colorPickerListener);
         rootView.findViewById(R.id.ibColor6).setOnClickListener(colorPickerListener);
 
+        mListView = (ListView) rootView.findViewById(R.id.lvPlayers);
+
         return rootView;
     }
 
@@ -88,45 +82,54 @@ public class LobbyFragment extends Fragment {
         }
     }
 
-    protected void newPlayerToAdd(String msg) {
-        //TODO
-        // Add date coming from the server.
-        if(mListViewArrayAdapter != null) {
+    protected void newPlayerToAdd(Player p) {
 
-            mListViewArrayAdapter.add(msg);
+        if(mListViewArrayAdapter != null) {
+            mListViewArrayAdapter.add(p);
         }
     }
 
-    private class PlayerArrayAdapter extends ArrayAdapter<String> {
-        private final Context context;
-        private final String[] values;
+    public void setPlayers(ArrayList<Player> playerList) {
 
-        public PlayerArrayAdapter(Context context, String[] values) {
+        mListViewArrayAdapter = new PlayerArrayAdapter(getActivity(), playerList);
+
+        mListView.setAdapter(mListViewArrayAdapter);
+
+    }
+
+    private class PlayerArrayAdapter extends ArrayAdapter<Player> {
+        private final Context context;
+        private ArrayList<Player> playerList = null;
+
+        public PlayerArrayAdapter(Context context, ArrayList<Player> values) {
             super(context, R.layout.players, values);
             this.context = context;
-            this.values = values;
+            this.playerList = values;
         }
+
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
             View rowView = inflater.inflate(R.layout.players, parent, false);
+
             TextView textView = (TextView) rowView.findViewById(R.id.txtPlayerName);
             ImageView imageView = (ImageView) rowView.findViewById(R.id.ivPlayerStatus);
-
-            textView.setText(values[position]);
             textView.setTypeface(MainActivity.handwritingFont);
-            // change the icon for Windows and iPhone
-            String s = values[position];
-            if (s.startsWith("iPhone")) {
-                imageView.setImageResource(R.mipmap.ic_no);
-            } else {
-                imageView.setImageResource(R.mipmap.ic_ok);
-            }
 
+            final Player p = playerList.get(position);
+            if(p!= null) {
+                textView.setText(p.name);
+                if(p.ready)
+                    imageView.setImageResource(R.mipmap.ic_ok);
+                else
+                    imageView.setImageResource(R.mipmap.ic_no);
+            }
             return rowView;
         }
+
     }
 
 

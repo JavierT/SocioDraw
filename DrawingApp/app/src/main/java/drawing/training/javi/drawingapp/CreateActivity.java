@@ -13,12 +13,15 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.alljoyn.bus.BusAttachment;
+import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.BusListener;
 import org.alljoyn.bus.BusObject;
 import org.alljoyn.bus.Mutable;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.SessionPortListener;
 import org.alljoyn.bus.Status;
+
+import java.util.ArrayList;
 
 public class CreateActivity extends ActionBarActivity {
 
@@ -57,6 +60,9 @@ public class CreateActivity extends ActionBarActivity {
     // Handler used to make calls to Alljoyn methods
     private Handler mBusHandler;
 
+    protected ArrayList<Player> mCurrentPlayers;
+    private int mPlayersConnected;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,8 +76,7 @@ public class CreateActivity extends ActionBarActivity {
         Intent intent = getIntent();
         mUsername = intent.getStringExtra(getString(R.string.username));
 
-        //TODO
-        // check if ServiceBusHandler.class.getName() is the same as "ServiceBusHandler".
+        mCurrentPlayers = new ArrayList<>();
 
         HandlerThread busThread = new HandlerThread(ServiceBusHandler.class.getSimpleName());
         busThread.start();
@@ -125,12 +130,46 @@ public class CreateActivity extends ActionBarActivity {
          * This code also prints the string it received from the user and the string it is
          * returning to the user to the screen.
          */
-        public String Ping(String inStr) {
-            sendUiMessage(MESSAGE_PING, inStr);
+        public boolean newPlayerConnected(String inStr) {
+            sendUiMessage(MESSAGE_PING, "Connected: " + inStr);
+            try {
+                Player p = new Player();
+                p.name = inStr;
+                p.ready = false;
+                p.score = 0;
+                p.color = "#FFFFFFF";
+                mCurrentPlayers.add(p);
+                return true;
+            }
+            catch (IndexOutOfBoundsException ex) {
+                Log.e(TAG,ex.toString());
+                return false;
+            }
+        }
 
-            // Simply echo the ping message
-            //sendUiMessage(MESSAGE_PING_REPLY, inStr);
-            return mUsername;
+        @Override
+        public Player[] getPlayers() throws BusException {
+            Log.i(TAG, String.format("Client requested a list of players"));
+            Message msg;
+            Player[] result;
+            if(mCurrentPlayers == null)
+            {
+                // Fill one with the own data sent and send it back. This case shouldn't happen
+                result = new Player[1];
+                result[0] = new Player();
+                result[0].name = "Please close the app and open again";
+                result[0].ready = false;
+                result[0].score = 0;
+                result[0].color = "#FFFFFF";
+                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
+            } else {
+                result = new Player[mCurrentPlayers.size()];
+                result = mCurrentPlayers.toArray(result);
+                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Sending players to client");
+            }
+            mHandler.sendMessage(msg);
+            return result;
+
         }
 
         // Helper function to send a message to the UI thread
@@ -228,7 +267,15 @@ public class CreateActivity extends ActionBarActivity {
                     status = mBus.bindSessionPort(contactPort, sessionOpts, new SessionPortListener() {
                         @Override
                         public boolean acceptSessionJoiner(short sessionPort, String joiner, SessionOpts sessionOpts) {
-                            return sessionPort == DrawingInterface.CONTACT_PORT;
+                            logStatus(String.format("BusAttachment.acceptSessionJoiner(%s)",joiner),  Status.OK);
+                            if((mPlayersConnected <= DrawingInterface.MAX_PLAYERS) && (sessionPort == DrawingInterface.CONTACT_PORT))
+                            {
+                                // Allow the connection
+                                mPlayersConnected++;
+                                return true;
+                            }
+                            else
+                                return false;
                         }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",

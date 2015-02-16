@@ -21,7 +21,9 @@ public interface DrawingInterface {
     public static final int CONNECT = 1;
     public static final int JOIN_SESSION = 2;
     public static final int DISCONNECT = 3;
-    public static final int PING = 4;
+    public static final int READY = 4;
+
+    public static final int MAX_PLAYERS = 6;
 
 
     /*
@@ -32,8 +34,12 @@ public interface DrawingInterface {
      * All methods that use the BusMethod annotation can throw a BusException and should indicate
      * this fact.
      */
-    @BusMethod
-    String Ping(String inStr) throws BusException;
+    @BusMethod(signature="s", replySignature = "b")
+    boolean newPlayerConnected(String inStr) throws BusException;
+
+    @BusMethod(replySignature = "ar")
+    Player[] getPlayers() throws BusException;
+
 }
 
 
