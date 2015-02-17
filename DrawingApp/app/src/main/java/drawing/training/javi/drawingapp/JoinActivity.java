@@ -16,11 +16,13 @@ import android.widget.Toast;
 import org.alljoyn.bus.BusAttachment;
 import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.BusListener;
+import org.alljoyn.bus.BusObject;
 import org.alljoyn.bus.Mutable;
 import org.alljoyn.bus.ProxyBusObject;
 import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
+import org.alljoyn.bus.annotation.BusSignalHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -273,6 +275,7 @@ public class JoinActivity extends ActionBarActivity {
                             logInfo(String.format("MyBusListener.sessionLost(sessionId = %d, reason = %d)", sessionId,reason));
                             mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
                         }
+
                     });
                     logStatus("BusAttachment.joinSession() - sessionId: " + sessionId.value, status);
 
@@ -292,16 +295,24 @@ public class JoinActivity extends ActionBarActivity {
                         mIsConnected = true;
                         mHandler.sendEmptyMessage(MESSAGE_STOP_PROGRESS_DIALOG);
 
+                        SignalHandlers signalHandlers = new SignalHandlers();
+                        status = mBus.registerSignalHandlers(signalHandlers);
+                        if(status != Status.OK) {
+                            logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
+                            sendMessage(obtainMessage(DrawingInterface.DISCONNECT));
+                            return;
+                        }
 
                         try {
                             if(mDrawingInterface.newPlayerConnected(mUsername)) {
                                 // SEND A READY TO MYSELF TO FILL THE UI.
-                                Message reply = obtainMessage(DrawingInterface.READY, mUsername);
-                                sendMessage(reply);
+                                //Message reply = obtainMessage(DrawingInterface.READY, mUsername);
+                                //sendMessage(reply);
                             }
                         } catch (BusException e) {
                             logException("DrawingInterface.newPlayerConnected()", e);
-                            finish();
+                            //TODO
+                            // Name already taken. Open a dialog and get another name
                             return;
                         }
                     }
@@ -317,30 +328,38 @@ public class JoinActivity extends ActionBarActivity {
                     }
                     mBus.disconnect();
                     getLooper().quit();
+                    finish();
                     break;
                 }
 
                 case DrawingInterface.READY: {
-                    try {
-                        if (mDrawingInterface != null) {
-                            //sendUiMessage(MESSAGE_PING, msg.obj);
-                            //String serverName = mDrawingInterface.Ping((String) msg.obj);
-                            //if(!serverName.isEmpty()) sendUiMessage(MESSAGE_PING_REPLY, "Received at " + serverName);
-                            Player[] reply = mDrawingInterface.getPlayers();
-
-                            mPlayersConnected = new ArrayList<>(Arrays.asList(reply));
-                            mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
-                        }
-                    } catch (BusException ex) {
-                        logException("DrawingInterface.READY()", ex);
-                        //sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
-                    }
+//                    try {
+//                        if (mDrawingInterface != null) {
+//
+//                            Player[] reply = mDrawingInterface.getPlayers();
+//
+//                            if(reply.length == 1 && reply[0].score == -1) // Error retrieving the list. Disconnect
+//                            {
+//                                msg = obtainMessage(DrawingInterface.DISCONNECT);
+//                                sendMessage(msg);
+//                            }
+//
+//                            mPlayersConnected = new ArrayList<>(Arrays.asList(reply));
+//                            mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
+//                        }
+//                    } catch (BusException ex) {
+//                        logException("DrawingInterface.READY()", ex);
+//                        //sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
+//                    }
                     break;
                 }
                 default:
                     break;
             }
         }
+
+
+
 
         /* Helper function to send a message to the UI thread. */
         private void sendUiMessage(int what, Object obj) {
@@ -375,4 +394,22 @@ public class JoinActivity extends ActionBarActivity {
     private void logInfo(String msg) {
         Log.i(TAG, msg);
     }
+
+
+    public class SignalHandlers  {
+
+        /**
+         * Signal handler for catching the signal update tables
+         * @param playersTable
+         */
+        @BusSignalHandler(iface="drawing.training.javi.drawingapp", signal="updatePlayerTables")
+        public void updatePlayerTables(Player[] playersTable) {
+            if(playersTable.length == 1 && playersTable[0].score == -1) // Error retrieving the list. Disconnect
+            {
+                mPlayersConnected = new ArrayList<>(Arrays.asList(playersTable));
+                mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
+            }
+        }
+    }
 }
+

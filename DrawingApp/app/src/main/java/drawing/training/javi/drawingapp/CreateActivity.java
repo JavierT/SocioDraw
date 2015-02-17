@@ -19,9 +19,10 @@ import org.alljoyn.bus.BusObject;
 import org.alljoyn.bus.Mutable;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.SessionPortListener;
+import org.alljoyn.bus.SignalEmitter;
 import org.alljoyn.bus.Status;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CreateActivity extends ActionBarActivity {
 
@@ -56,12 +57,17 @@ public class CreateActivity extends ActionBarActivity {
 
     // The Alljoyn object that is our service
     private DrawingService mDrawingService;
+    //private SignalService mSignalService;
 
     // Handler used to make calls to Alljoyn methods
     private Handler mBusHandler;
+    private SignalEmitter mEmitter;
+    private DrawingInterface mInterface = null;
 
-    protected ArrayList<Player> mCurrentPlayers;
-    private int mPlayersConnected;
+    protected HashMap<String, Player> mCurrentPlayers;
+    private String mJoinerName;
+    private int mSessionId;
+    //private int mPlayersConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +82,7 @@ public class CreateActivity extends ActionBarActivity {
         Intent intent = getIntent();
         mUsername = intent.getStringExtra(getString(R.string.username));
 
-        mCurrentPlayers = new ArrayList<>();
+        mCurrentPlayers = new HashMap<>();
 
         HandlerThread busThread = new HandlerThread(ServiceBusHandler.class.getSimpleName());
         busThread.start();
@@ -84,6 +90,7 @@ public class CreateActivity extends ActionBarActivity {
 
         //Start our service
         mDrawingService = new DrawingService();
+        //mSignalService = new SignalService();
         mBusHandler.sendEmptyMessage(DrawingInterface.CONNECT);
 
     }
@@ -119,35 +126,52 @@ public class CreateActivity extends ActionBarActivity {
         mBusHandler.sendEmptyMessage(DrawingInterface.DISCONNECT);
     }
 
-
-
     // The class that is our Alljoyn service. It implements the DrawingInterface
-    class DrawingService implements DrawingInterface, BusObject {
-        /*
-         * This is the code run when the client makes a call to the Ping method of the
-         * DrawingInterface.  This implementation just returns the received String to the caller.
-         *
-         * This code also prints the string it received from the user and the string it is
-         * returning to the user to the screen.
+    public class DrawingService implements DrawingInterface, BusObject {
+
+        /**
+         * Method send by the client to add the information of a new player
+         * to the server. This method will raise the signal "UpdatePlayersTable"
+         * that will make others players to update his table.
+         * @param name: name of the new player connected
+         * @return true if the players has been added correctly
          */
-        public boolean newPlayerConnected(String inStr) {
-            sendUiMessage(MESSAGE_PING, "Connected: " + inStr);
-            try {
+        public boolean newPlayerConnected(String name) {
+            sendUiMessage(MESSAGE_PING, "Connected: " + name);
+            if(mCurrentPlayers.containsKey(name))
+                // The player with that name is already registered.
+                return false;
+            else
+            {
                 Player p = new Player();
-                p.name = inStr;
+                p.name = name;
                 p.ready = false;
                 p.score = 0;
                 p.color = "#FFFFFFF";
-                mCurrentPlayers.add(p);
+                mCurrentPlayers.put(name, p);
+
+                /*Emit signal of a new player connected */
+                if(mInterface != null && mCurrentPlayers.size()>1) {
+                    Player[] result = new Player[mCurrentPlayers.size()];
+                    result = mCurrentPlayers.values().toArray(result);
+                    try {
+                        mInterface.updatePlayerTables(result);
+                    } catch (BusException e) {
+                        logStatus("newPlayerConnected.updatePlayerTables() signal" + e.toString(), Status.BUS_ERRORS);
+                        e.printStackTrace();
+                    }
+                }
                 return true;
-            }
-            catch (IndexOutOfBoundsException ex) {
-                Log.e(TAG,ex.toString());
-                return false;
             }
         }
 
-        @Override
+        //
+
+        /**
+         * Method to get all the players connected to the server.
+         * @return An array with all the players data currently connected
+         * @throws BusException
+         */
         public Player[] getPlayers() throws BusException {
             Log.i(TAG, String.format("Client requested a list of players"));
             Message msg;
@@ -159,12 +183,12 @@ public class CreateActivity extends ActionBarActivity {
                 result[0] = new Player();
                 result[0].name = "Please close the app and open again";
                 result[0].ready = false;
-                result[0].score = 0;
+                result[0].score = -1;
                 result[0].color = "#FFFFFF";
                 msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
             } else {
                 result = new Player[mCurrentPlayers.size()];
-                result = mCurrentPlayers.toArray(result);
+                result = mCurrentPlayers.values().toArray(result);
                 msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Sending players to client");
             }
             mHandler.sendMessage(msg);
@@ -176,7 +200,15 @@ public class CreateActivity extends ActionBarActivity {
         private void sendUiMessage(int what, Object obj) {
             mHandler.sendMessage(mHandler.obtainMessage(what,obj));
         }
+
+        // SIGNAL
+        public void updatePlayerTables(Player[] playersTable) throws BusException { /* No code needed here*/}
     }
+
+//    public class SignalService implements SignalInterface, BusObject {
+//
+//
+//    }
 
     // This class will handle all Alljoyn calls
     class ServiceBusHandler extends Handler {
@@ -209,18 +241,18 @@ public class CreateActivity extends ActionBarActivity {
                      * communication).  The second argument must be set to Receive to allow
                      * communication between devices.
                      */
-                        mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
+                     mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
 
                     /*
                      * Create a bus listener class
                      */
-                        mBus.registerBusListener(new BusListener());
+                     mBus.registerBusListener(new BusListener());
 
                     /*
                      * To make a service available to other AllJoyn peers, first register a BusObject with
                      * the BusAttachment at a specific path.
                      *
-                     * Our service is the SimpleService BusObject at the "/SimpleService" path.
+                     * Our service is the DrawingService BusObject at the "/DrawingService" path.
                      */
                     Status status = mBus.registerBusObject(mDrawingService, "/DrawingService");
                     logStatus("BusAttachment.registerBusObject()", status);
@@ -268,14 +300,25 @@ public class CreateActivity extends ActionBarActivity {
                         @Override
                         public boolean acceptSessionJoiner(short sessionPort, String joiner, SessionOpts sessionOpts) {
                             logStatus(String.format("BusAttachment.acceptSessionJoiner(%s)",joiner),  Status.OK);
-                            if((mPlayersConnected <= DrawingInterface.MAX_PLAYERS) && (sessionPort == DrawingInterface.CONTACT_PORT))
+                            if((sessionPort == DrawingInterface.CONTACT_PORT)/*&& (mPlayersConnected <= DrawingInterface.MAX_PLAYERS) */)
                             {
                                 // Allow the connection
-                                mPlayersConnected++;
+                                //mPlayersConnected++;
                                 return true;
                             }
                             else
                                 return false;
+                        }
+
+                        @Override
+                        public void sessionJoined(short sessionPort, int id, String joiner) {
+                            mSessionId = id;
+                            mJoinerName = joiner;
+                            // TODO This emitter does not work. It is registered but the client doesnt' find the signal
+                            if(mEmitter == null) {
+                                mEmitter = new SignalEmitter(mDrawingService, mJoinerName, mSessionId, SignalEmitter.GlobalBroadcast.Off);
+                                mInterface = mEmitter.getInterface(DrawingInterface.class);
+                            }
                         }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",
@@ -310,10 +353,8 @@ public class CreateActivity extends ActionBarActivity {
                             return;
                         }
                     }
-
                     break;
                 }
-
                 /* Release all resources acquired in connect. */
                 case DrawingInterface.DISCONNECT: {
                 /*

@@ -3,14 +3,15 @@ package drawing.training.javi.drawingapp;
 import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.annotation.BusInterface;
 import org.alljoyn.bus.annotation.BusMethod;
+import org.alljoyn.bus.annotation.BusSignal;
 
 /**
  * Drawing App created by Javier Tresaco on 3/02/15.
  * ${PACKAGE_NAME}
  * Source code on:  https://github.com/JavierT/SocioDraw
  */
-//@BusInterface(name = "org.alljoyn.bus.drawing.ClientInterface")
-@BusInterface(name = "drawing.training.javi.drawing.ClientInterface")
+//@BusInterface(name = "drawing.training.javi.drawing.ClientInterface")
+@BusInterface(name = "drawing.training.javi.drawingapp")
 public interface DrawingInterface {
 
 
@@ -18,6 +19,7 @@ public interface DrawingInterface {
     public static final String SERVICE_NAME = "drawing.training.javi.drawing";
     public static final short CONTACT_PORT = 42;
 
+    //TODO Refact this in constant server, constants client
     public static final int CONNECT = 1;
     public static final int JOIN_SESSION = 2;
     public static final int DISCONNECT = 3;
@@ -39,6 +41,9 @@ public interface DrawingInterface {
 
     @BusMethod(replySignature = "ar")
     Player[] getPlayers() throws BusException;
+
+    @BusSignal
+    public void updatePlayerTables(Player[] playersTable) throws BusException;
 
 }
 
