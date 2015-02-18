@@ -43,7 +43,7 @@ public interface DrawingInterface {
     Player[] getPlayers() throws BusException;
 
     @BusSignal
-    public void updatePlayerTables(Player[] playersTable) throws BusException;
+    public void updatePlayerTables() throws BusException;
 
 }
 

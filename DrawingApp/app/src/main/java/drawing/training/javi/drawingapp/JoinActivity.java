@@ -184,6 +184,15 @@ public class JoinActivity extends ActionBarActivity {
 
         }
 
+        @BusSignalHandler(iface="drawing.training.javi.drawingapp", signal="updatePlayerTables")
+        public void updatePlayerTables() {
+//            if(playersTable.length == 1 && playersTable[0].score == -1) // Error retrieving the list. Disconnect
+//            {
+            mPlayersConnected = new ArrayList<>();
+            mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
+//            }
+        }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -253,6 +262,7 @@ public class JoinActivity extends ActionBarActivity {
                     // If discovery is currently being stippped don't join any other sessions
 
                     if(mIsStoppingDiscovery || mIsConnected) {
+
                         break;
                     }
                     /*
@@ -295,8 +305,8 @@ public class JoinActivity extends ActionBarActivity {
                         mIsConnected = true;
                         mHandler.sendEmptyMessage(MESSAGE_STOP_PROGRESS_DIALOG);
 
-                        SignalHandlers signalHandlers = new SignalHandlers();
-                        status = mBus.registerSignalHandlers(signalHandlers);
+
+                        status = mBus.registerSignalHandlers(this);
                         if(status != Status.OK) {
                             logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
                             sendMessage(obtainMessage(DrawingInterface.DISCONNECT));
@@ -306,15 +316,18 @@ public class JoinActivity extends ActionBarActivity {
                         try {
                             if(mDrawingInterface.newPlayerConnected(mUsername)) {
                                 // SEND A READY TO MYSELF TO FILL THE UI.
-                                //Message reply = obtainMessage(DrawingInterface.READY, mUsername);
-                                //sendMessage(reply);
+                                Message reply = obtainMessage(DrawingInterface.READY, mUsername);
+                                sendMessage(reply);
                             }
                         } catch (BusException e) {
                             logException("DrawingInterface.newPlayerConnected()", e);
-                            //TODO
-                            // Name already taken. Open a dialog and get another name
+                            //TODO Name already taken. Open a dialog and get another name
                             return;
                         }
+
+
+
+
                     }
                     break;
                 }
@@ -333,10 +346,17 @@ public class JoinActivity extends ActionBarActivity {
                 }
 
                 case DrawingInterface.READY: {
-//                    try {
-//                        if (mDrawingInterface != null) {
+                    //SignalHandlers signalHandlers = new SignalHandlers();
+//                    Status status = mBus.registerSignalHandlers(this);
+//                    if(status != Status.OK) {
+//                        logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
+//                        sendMessage(obtainMessage(DrawingInterface.DISCONNECT));
+//                        return;
+//                    }
+                    try {
+                        if (mDrawingInterface != null) {
 //
-//                            Player[] reply = mDrawingInterface.getPlayers();
+                            Player[] reply = mDrawingInterface.getPlayers();
 //
 //                            if(reply.length == 1 && reply[0].score == -1) // Error retrieving the list. Disconnect
 //                            {
@@ -346,11 +366,11 @@ public class JoinActivity extends ActionBarActivity {
 //
 //                            mPlayersConnected = new ArrayList<>(Arrays.asList(reply));
 //                            mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
-//                        }
-//                    } catch (BusException ex) {
-//                        logException("DrawingInterface.READY()", ex);
+                        }
+                    } catch (BusException ex) {
+                        logException("DrawingInterface.READY()", ex);
 //                        //sendUiMessage(MESSAGE_PING_REPLY, "Message did not arrive");
-//                    }
+                    }
                     break;
                 }
                 default:
@@ -400,16 +420,9 @@ public class JoinActivity extends ActionBarActivity {
 
         /**
          * Signal handler for catching the signal update tables
-         * @param playersTable
+         * @param
          */
-        @BusSignalHandler(iface="drawing.training.javi.drawingapp", signal="updatePlayerTables")
-        public void updatePlayerTables(Player[] playersTable) {
-            if(playersTable.length == 1 && playersTable[0].score == -1) // Error retrieving the list. Disconnect
-            {
-                mPlayersConnected = new ArrayList<>(Arrays.asList(playersTable));
-                mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
-            }
-        }
+
     }
 }
 
