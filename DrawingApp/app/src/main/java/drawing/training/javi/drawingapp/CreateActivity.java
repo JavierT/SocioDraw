@@ -22,9 +22,11 @@ import org.alljoyn.bus.SessionPortListener;
 import org.alljoyn.bus.SignalEmitter;
 import org.alljoyn.bus.Status;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CreateActivity extends ActionBarActivity {
+public class CreateActivity extends ActionBarActivity
+    implements LobbyFragment.setStartGame {
 
     /* Load the native alljoyn_java library */
     static {
@@ -34,17 +36,23 @@ public class CreateActivity extends ActionBarActivity {
     private String mUsername;
     private static final String TAG = "DrawingService";
 
-    private static final int MESSAGE_PING = 1;
+    private static final int MESSAGE_SET_NEW_PLAYER= 1;
     private static final int MESSAGE_POST_TOAST = 2;
+    private static final int MESSAGE_UPDATE_PLAYER = 3;
+
+    public static final int SERVICE_CONNECT = 1;
+    public static final int SERVICE_DISCONNECT = 2;
 
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            CreateFragment cf =  (CreateFragment) getSupportFragmentManager().findFragmentById(R.id.createContainer);
             switch (msg.what) {
-                case MESSAGE_PING:
-                    String ping = (String) msg.obj;
-                    cf.newMessageToAdd(ping);
+                case MESSAGE_SET_NEW_PLAYER:
+                    mLobbyFragment.newPlayerToAdd((Player) msg.obj);
+                    break;
+                case MESSAGE_UPDATE_PLAYER:
+                    String playerName = (String) msg.obj;
+                    mLobbyFragment.setReady(playerName,mCurrentPlayers.get(playerName).ready);
                     break;
                 case MESSAGE_POST_TOAST:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
@@ -55,6 +63,9 @@ public class CreateActivity extends ActionBarActivity {
         }
     };
 
+    private LobbyFragment mLobbyFragment;
+
+
     // The Alljoyn object that is our service
     private DrawingService mDrawingService;
     //private SignalService mSignalService;
@@ -62,11 +73,12 @@ public class CreateActivity extends ActionBarActivity {
     // Handler used to make calls to Alljoyn methods
     private Handler mBusHandler;
     private SignalEmitter mEmitter;
-    private DrawingInterface mInterface;
+    //private DrawingInterface mInterface;
 
     protected HashMap<String, Player> mCurrentPlayers;
     private String mJoinerName;
     private int mSessionId;
+    private boolean mAllPlayersReady;
     //private int mPlayersConnected;
 
     @Override
@@ -74,8 +86,9 @@ public class CreateActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
         if (savedInstanceState == null) {
+            mLobbyFragment = new LobbyFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.createContainer, new CreateFragment())
+                    .add(R.id.createContainer, mLobbyFragment)
                     .commit();
         }
 
@@ -91,7 +104,7 @@ public class CreateActivity extends ActionBarActivity {
         //Start our service
         mDrawingService = new DrawingService();
         //mSignalService = new SignalService();
-        mBusHandler.sendEmptyMessage(DrawingInterface.CONNECT);
+        mBusHandler.sendEmptyMessage(SERVICE_CONNECT);
 
     }
 
@@ -123,7 +136,11 @@ public class CreateActivity extends ActionBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mBusHandler.sendEmptyMessage(DrawingInterface.DISCONNECT);
+        mBusHandler.sendEmptyMessage(SERVICE_DISCONNECT);
+    }
+
+    public void startGame() {
+        mDrawingService.sendUiMessage(MESSAGE_POST_TOAST,"STAAART THE GAMEEEE");
     }
 
     // The class that is our Alljoyn service. It implements the DrawingInterface
@@ -134,22 +151,23 @@ public class CreateActivity extends ActionBarActivity {
          * to the server. This method will raise the signal "UpdatePlayersTable"
          * that will make others players to update his table.
          * @param name: name of the new player connected
-         * @return true if the players has been added correctly
+         * @return true if the players has been added correctly. Returns false if the
+         * name is already registered.
          */
         public boolean newPlayerConnected(String name) {
-            sendUiMessage(MESSAGE_PING, "Connected: " + name);
             Message msg;
             if(mCurrentPlayers.containsKey(name))
-                // The player with that name is already registered.
                 return false;
             else
             {
+
                 Player p = new Player();
                 p.name = name;
                 p.ready = false;
                 p.score = 0;
                 p.color = "#FFFFFFF";
                 mCurrentPlayers.put(name, p);
+                sendUiMessage(MESSAGE_SET_NEW_PLAYER, mCurrentPlayers.get(name));
 
                 /*Emit signal of a new player connected */
                 if(mDrawingService != null && mCurrentPlayers.size()>0) {
@@ -193,36 +211,75 @@ public class CreateActivity extends ActionBarActivity {
                 }
                 mHandler.sendMessage(msg);
             }
-//            Log.i(TAG, String.format("Client requested a list of players"));
+            Log.i(TAG, String.format("Client requested a list of players"));
 //            Message msg;
             Player[] result;
-//            if(mCurrentPlayers == null)
-//            {
-//                // Fill one with the own data sent and send it back. This case shouldn't happen
+            if(mCurrentPlayers == null)
+            {
+                // Fill one with the own data sent and send it back. This case shouldn't happen
                 result = new Player[1];
                 result[0] = new Player();
                 result[0].name = "Please close the app and open again";
                 result[0].ready = false;
                 result[0].score = -1;
                 result[0].color = "#FFFFFF";
-//                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
-//            } else {
-//                result = new Player[mCurrentPlayers.size()];
-//                result = mCurrentPlayers.values().toArray(result);
-//                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Sending players to client");
-//            }
-//            mHandler.sendMessage(msg);
+                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
+            } else {
+                result = new Player[mCurrentPlayers.size()];
+                result = mCurrentPlayers.values().toArray(result);
+                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Sending players to client");
+            }
+            mHandler.sendMessage(msg);
             return result;
-
         }
+
+        /**
+         * Returns the status of the lobby. It can be WAITING = 0
+         *
+         * @return
+         * @throws BusException
+         */
+        public boolean setPlayerStatus(String name, boolean status) throws BusException {
+            if(!mCurrentPlayers.containsKey(name))
+                return false;
+            else
+            {
+                mCurrentPlayers.get(name).ready = status;
+                sendUiMessage(MESSAGE_UPDATE_PLAYER,name);
+                mAllPlayersReady = checkStatus();
+                return true;
+            }
+        }
+
+        /**
+         * Returns the status of the lobby. It can be WAITING = 0
+         *
+         * @return
+         * @throws BusException
+         */
+        public boolean getLobbyStatus() throws BusException {
+            return mAllPlayersReady;
+        }
+
+        /**
+         * Signal that tell the clients that a new user has joined the session
+         * @throws BusException
+         */
+        public void updatePlayerTables() throws BusException { /* No code needed here*/}
 
         // Helper function to send a message to the UI thread
         private void sendUiMessage(int what, Object obj) {
             mHandler.sendMessage(mHandler.obtainMessage(what,obj));
         }
 
-        // SIGNAL
-        public void updatePlayerTables() throws BusException { /* No code needed here*/}
+    }
+
+    private boolean checkStatus() {
+        boolean ready = false;
+        for(Player p: mCurrentPlayers.values()) {
+            ready = ready && p.ready;
+        }
+        return ready;
     }
 
 //    public class SignalService implements SignalInterface, BusObject {
@@ -248,7 +305,7 @@ public class CreateActivity extends ActionBarActivity {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case DrawingInterface.CONNECT: {
+                case SERVICE_CONNECT: {
                     org.alljoyn.bus.alljoyn.DaemonInit.PrepareDaemon(getApplicationContext());
 
                     /*
@@ -378,7 +435,7 @@ public class CreateActivity extends ActionBarActivity {
                     break;
                 }
                 /* Release all resources acquired in connect. */
-                case DrawingInterface.DISCONNECT: {
+                case SERVICE_DISCONNECT: {
                 /*
                  * It is important to unregister the BusObject before disconnecting from the bus.
                  * Failing to do so could result in a resource leak.

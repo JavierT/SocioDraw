@@ -2,7 +2,9 @@ package drawing.training.javi.drawingapp;
 
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -25,8 +27,14 @@ public class LobbyFragment extends Fragment {
 
     private PlayerArrayAdapter mListViewArrayAdapter;
     private ListView mListView;
+    private View rootView;
     private ImageButton currPaint;
+    private boolean mReadyState = false;
     //private int paintColor = 0xFF660000;
+    private Button mReadyButton;
+    private ArrayList<Player> mPlayersConnected;
+
+    private setStartGame mCallback;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -35,76 +43,87 @@ public class LobbyFragment extends Fragment {
 
         TextView txt = (TextView) rootView.findViewById(R.id.txtLobby);
         txt.setTypeface(MainActivity.handwritingFont);
-        txt = (TextView) rootView.findViewById(R.id.txtLobbyColor);
-        txt.setTypeface(MainActivity.handwritingFont);
         txt = (TextView) rootView.findViewById(R.id.txtLobbyPlayer);
         txt.setTypeface(MainActivity.handwritingFont);
 
-        Button btn = (Button) rootView.findViewById(R.id.btnLobbyExit);
-        btn.setTypeface(MainActivity.handwritingFont);
-        btn = (Button) rootView.findViewById(R.id.btnLobbyReady);
-        btn.setTypeface(MainActivity.handwritingFont);
+        mReadyButton = (Button) rootView.findViewById(R.id.btnLobbyStart);
+        mReadyButton.setTypeface(MainActivity.handwritingFont);
+        mReadyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        // Color picker
-        LinearLayout paintLayout = (LinearLayout)rootView.findViewById(R.id.paint_colors);
-        currPaint = (ImageButton)paintLayout.getChildAt(0);
-        currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
-
-
-        View.OnClickListener colorPickerListener = new View.OnClickListener(){
-            public void onClick(View v){
-                paintClicked(v);
+                mCallback.startGame();
             }
-        };
-        rootView.findViewById(R.id.ibColor1).setOnClickListener(colorPickerListener);
-        rootView.findViewById(R.id.ibColor2).setOnClickListener(colorPickerListener);
-        rootView.findViewById(R.id.ibColor3).setOnClickListener(colorPickerListener);
-        rootView.findViewById(R.id.ibColor4).setOnClickListener(colorPickerListener);
-        rootView.findViewById(R.id.ibColor5).setOnClickListener(colorPickerListener);
-        rootView.findViewById(R.id.ibColor6).setOnClickListener(colorPickerListener);
+        });
+
 
         mListView = (ListView) rootView.findViewById(R.id.lvPlayers);
 
+        mPlayersConnected = new ArrayList<Player>();
+        mListViewArrayAdapter = new PlayerArrayAdapter(getActivity());
+
+        mListView.setAdapter(mListViewArrayAdapter);
         return rootView;
     }
 
-    private void paintClicked(View view) {
-        if(view!=currPaint) {
-            ImageButton imgView = (ImageButton)view;
-            String color = view.getTag().toString();
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
 
-            // TESTING
-            Toast.makeText(getActivity(), "Color picked: " + color, Toast.LENGTH_LONG).show();
-
-            imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
-            currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
-            currPaint=(ImageButton)view;
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (setStartGame) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement setStartGame");
         }
     }
 
-    protected void newPlayerToAdd(Player p) {
 
-        if(mListViewArrayAdapter != null) {
-            mListViewArrayAdapter.add(p);
+    public boolean setReady(String name, boolean status) {
+        int position = 0;
+        for (int i=0; i<mPlayersConnected.size(); i++)
+        {
+            final Player p = mPlayersConnected.get(i);
+            if(p.name.equals(name))
+                position = i;
+
         }
+        if(position > mListViewArrayAdapter.getCount())
+        {
+            // Out of bounds
+            return false;
+        }
+        else {
+            final Player p = mListViewArrayAdapter.getItem(position);
+            if(p!= null) {
+                p.ready = status;
+                mListViewArrayAdapter.notifyDataSetChanged();
+                return true;
+            }
+        }
+        return false;
     }
 
-    public void setPlayers(ArrayList<Player> playerList) {
+    public interface setStartGame {
+        public void startGame();
+    }
 
-        mListViewArrayAdapter = new PlayerArrayAdapter(getActivity(), playerList);
-
-        mListView.setAdapter(mListViewArrayAdapter);
-
+    public void newPlayerToAdd(Player p) {
+        mPlayersConnected.add(p);
+        mListViewArrayAdapter.notifyDataSetChanged();
     }
 
     private class PlayerArrayAdapter extends ArrayAdapter<Player> {
         private final Context context;
-        private ArrayList<Player> playerList = null;
+        //private ArrayList<Player> playerList = null;
 
-        public PlayerArrayAdapter(Context context, ArrayList<Player> values) {
-            super(context, R.layout.players, values);
+        public PlayerArrayAdapter(Context context) {
+            //super(context, R.layout.players, values);
+            super(context, R.layout.players);
             this.context = context;
-            this.playerList = values;
+            //this.playerList = values;
         }
 
 
@@ -119,7 +138,7 @@ public class LobbyFragment extends Fragment {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.ivPlayerStatus);
             textView.setTypeface(MainActivity.handwritingFont);
 
-            final Player p = playerList.get(position);
+            final Player p = mPlayersConnected.get(position);
             if(p!= null) {
                 textView.setText(p.name);
                 if(p.ready)
@@ -129,6 +148,7 @@ public class LobbyFragment extends Fragment {
             }
             return rowView;
         }
+
 
     }
 

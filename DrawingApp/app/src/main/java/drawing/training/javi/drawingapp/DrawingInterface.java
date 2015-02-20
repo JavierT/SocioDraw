@@ -19,13 +19,12 @@ public interface DrawingInterface {
     public static final String SERVICE_NAME = "drawing.training.javi.drawing";
     public static final short CONTACT_PORT = 42;
 
-    //TODO Refact this in constant server, constants client
-    public static final int CONNECT = 1;
-    public static final int JOIN_SESSION = 2;
-    public static final int DISCONNECT = 3;
-    public static final int READY = 4;
-
     public static final int MAX_PLAYERS = 6;
+
+    public static final int LOBBY_STATUS_WAITING = 0;
+    public static final int LOBBY_STATUS_NEEDUPDATE = 1;
+    public static final int LOBBY_STATUS_PLAY = 2;
+
 
 
     /*
@@ -41,6 +40,12 @@ public interface DrawingInterface {
 
     @BusMethod(replySignature = "ar")
     Player[] getPlayers() throws BusException;
+
+    @BusMethod
+    boolean getLobbyStatus() throws BusException;
+
+    @BusMethod
+    boolean setPlayerStatus(String name, boolean status) throws BusException;
 
     @BusSignal
     public void updatePlayerTables() throws BusException;
