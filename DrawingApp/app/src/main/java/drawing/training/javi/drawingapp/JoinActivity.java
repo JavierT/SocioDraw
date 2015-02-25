@@ -57,6 +57,8 @@ public class JoinActivity extends ActionBarActivity
     private ProgressDialog mDialog;
     private JoinFragment mJoinFragment;
 
+    protected ArrayList<String> mAvailableColors;
+
 
     private Handler mHandler = new Handler() {
 
@@ -83,14 +85,14 @@ public class JoinActivity extends ActionBarActivity
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     mJoinFragment.setNotReady();
                 case MESSAGE_COLORS_UPDATE:
-                    ArrayList<String> ac = (ArrayList<String>) msg.obj;
-                    if(ac != null) {
-                        if (ac.get(0).equals(DrawingInterface.NOT_AVAILABLE)) { // Color already taken
-                            ac.remove(0);
+                    //ArrayList<String> ac = (ArrayList<String>) msg.obj;
+                    if(mAvailableColors != null && mAvailableColors.size()>0) {
+                        if (mAvailableColors.get(0).equals(DrawingInterface.NOT_AVAILABLE)) { // Color already taken
+                            mAvailableColors.remove(0);
                             Toast.makeText(getApplicationContext(), "Someone took already that color, please choose another", Toast.LENGTH_LONG).show();
                             mJoinFragment.setDefaultColor();
                         }
-                        mJoinFragment.setAvailableColors(ac);
+                        mJoinFragment.setAvailableColors(mAvailableColors);
                     }
                 default:
                     break;
@@ -151,6 +153,8 @@ public class JoinActivity extends ActionBarActivity
 
         Intent intent = getIntent();
         mUsername = intent.getStringExtra(getString(R.string.username));
+
+        mAvailableColors = new ArrayList<>();
     }
 
 
@@ -423,7 +427,7 @@ public class JoinActivity extends ActionBarActivity
 
                 case CLIENT_GETPLAYERS: {
                     /* Register the signals, to see if they want to work....*/
-                    SignalHandlers signalHandlers = new SignalHandlers();
+                    //SignalHandlers signalHandlers = new SignalHandlers();
                     Status status = mBus.registerSignalHandlers(this);
                     if (status != Status.OK) {
                         logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
@@ -435,21 +439,23 @@ public class JoinActivity extends ActionBarActivity
                 }
 
                 case CLIENT_SET_COLOR: {
-                    Log.d("DrawingApp" , msg.toString());
+                    Log.d("DrawingApp" , "Entrando en set color");
                     String param = (String)msg.obj;
                     try {
+                        Log.d("DrawingApp" , "Enviando:" + mUsername + " y " + param);
                         String[] colors = mDrawingInterface.setPlayerColor(mUsername, param);
 
-                        if(colors == null)
+                        if(colors[0].equals(DrawingInterface.USERNAME_NOT_FOUND))
                             sendUiMessage(MESSAGE_POST_TOAST, "This is weird. Please exit and enter again");
                         else
                         {
-                            ArrayList<String> ac = new ArrayList<>(Arrays.asList(colors));
-                            sendUiMessage(MESSAGE_COLORS_UPDATE, ac);
+                            mAvailableColors = new ArrayList<>(Arrays.asList(colors));
+                            //sendUiMessage(MESSAGE_COLORS_UPDATE, ac);
+                            mHandler.sendEmptyMessage(MESSAGE_COLORS_UPDATE);
                         }
                     } catch (BusException e) {
                         logException("DrawingInterface.setPlayerColor()", e);
-                        sendUiMessage(MESSAGE_SET_NOT_READY, "Color can't be sent");
+                        sendUiMessage(MESSAGE_POST_TOAST, "Color can't be sent");
                         return;
                     }
                     break;
@@ -468,7 +474,7 @@ public class JoinActivity extends ActionBarActivity
                     }
                     if(ready) {
                         // As the signals are not working, we go to waiting state.
-                        sendEmptyMessage(CLIENT_WAITING);
+                        //sendEmptyMessage(CLIENT_WAITING);
                     }
                     break;
                 }
@@ -536,13 +542,5 @@ public class JoinActivity extends ActionBarActivity
     }
 
 
-    public class SignalHandlers  {
-
-        /**
-         * Signal handler for catching the signal update tables
-         * @param
-         */
-
-    }
 }
 

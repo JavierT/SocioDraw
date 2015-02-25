@@ -64,8 +64,7 @@ public class CreateActivity extends ActionBarActivity
                     String name = (String) msg.obj;
                     Toast toast = Toast.makeText(getApplicationContext(), "The player " + name + "has taken this color", Toast.LENGTH_SHORT);
                     TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
-                    v.setTextColor(Color.parseColor(mCurrentPlayers.get(name).color));
-                    toast.show();
+                    mLobbyFragment.updatePlayerColor(name,mCurrentPlayers.get(name).color);
                     // Optional set name of player in that color.
                     break;
                 default:
@@ -121,14 +120,14 @@ public class CreateActivity extends ActionBarActivity
 
         // Fill the colors dictionary
         mColorsAvailable = new HashMap<>();
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.blue))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.red))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.yellow))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.darkblue))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.orange))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.purple))),false);
-        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.green))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.black))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.blue))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.red))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.yellow))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.darkblue))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.orange))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.purple))),false);
+        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.green))),false);
 
 
 
@@ -191,7 +190,7 @@ public class CreateActivity extends ActionBarActivity
                 p.name = name;
                 p.ready = false;
                 p.score = 0;
-                p.color = String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black)));
+                p.color = String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black)));
                 mCurrentPlayers.put(name, p);
                 sendUiMessage(MESSAGE_SET_NEW_PLAYER, mCurrentPlayers.get(name));
 
@@ -248,7 +247,7 @@ public class CreateActivity extends ActionBarActivity
                 result[0].name = "Please close the app and open again";
                 result[0].ready = false;
                 result[0].score = -1;
-                result[0].color = String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black)));
+                result[0].color = String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black)));
                 msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
             } else {
                 result = new Player[mCurrentPlayers.size()];
@@ -284,28 +283,41 @@ public class CreateActivity extends ActionBarActivity
          * @throws BusException
          */
         public String[] setPlayerColor(String name, String color) throws BusException {
-            if(!mCurrentPlayers.containsKey(name))
-                return null;
+            Log.d("DrawingApp Server","Method setPlayerColor called: " + name + " / " + color);
+            ArrayList<String> colorsAvailable = new ArrayList<>();
+            if(!mCurrentPlayers.containsKey(name)) {
+                Log.d("DrawingApp Server","Username not found: " + name);
+                colorsAvailable.add(DrawingInterface.USERNAME_NOT_FOUND);
+            }
             else
             {
-                ArrayList<String> colorsAvailable = new ArrayList<>();
-                if(mColorsAvailable.get(color))
+                String aux = color.toUpperCase();
+                if(mColorsAvailable.get(color.toUpperCase()))
                 {
                     // Color already taken. Return array with -1 in first item
+                    Log.d("DrawingApp Server","Color already taken ");
                     colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
                 }
                 else {
-                    mCurrentPlayers.get(name).color = color;
+                    Log.d("DrawingApp Server","Color available ");
+                    mCurrentPlayers.get(name).color = "#"+color;
                     sendUiMessage(MESSAGE_COLOR_SELECTED,name);
                     mColorsAvailable.put(color, true);
                 }
                 // Return table with available colors
                 for(String s : mColorsAvailable.keySet()) {
-                    if(mColorsAvailable.get(s))
+                    if(!mColorsAvailable.get(s)) {
                         colorsAvailable.add(s);
+                        Log.d("DrawingApp Server","Imprimiendo colores disponibles: " + s);
+                    }
                 }
-                return (String[]) colorsAvailable.toArray();
+                if(mColorsAvailable.isEmpty())
+                    colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
             }
+            String[] colorTable;
+            colorTable = new String[mColorsAvailable.size()];
+            colorTable = colorsAvailable.toArray(colorTable);
+            return colorTable;
         }
 
         /**

@@ -22,6 +22,7 @@ public interface DrawingInterface {
     public static final int MAX_PLAYERS = 6;
 
     public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
+    public static final String USERNAME_NOT_FOUND = "USERNAME_NOT_FOUND";
 
 
     /*
@@ -44,7 +45,7 @@ public interface DrawingInterface {
     @BusMethod
     boolean setPlayerStatus(String name, boolean status) throws BusException;
 
-    @BusMethod (signature="ss", replySignature = "as")
+    @BusMethod(signature="ss", replySignature = "as")
     String[] setPlayerColor(String name, String color) throws BusException;
 
     @BusSignal

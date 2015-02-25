@@ -3,6 +3,7 @@ package drawing.training.javi.drawingapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -108,6 +109,30 @@ public class LobbyFragment extends Fragment {
         mListViewArrayAdapter.notifyDataSetChanged();
     }
 
+    public boolean updatePlayerColor(String name, String color) {
+        int position = 0;
+        for (int i=0; i<mPlayersConnected.size(); i++)
+        {
+            if(mPlayersConnected.get(i).name.equals(name))
+                position = i;
+
+        }
+        if(position > mListViewArrayAdapter.getCount())
+        {
+            // Out of bounds
+            return false;
+        }
+        else {
+            Player p = mListViewArrayAdapter.getItem(position);
+            if(p!= null) {
+                p.color = color;
+                mListViewArrayAdapter.notifyDataSetChanged();
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class PlayerArrayAdapter extends ArrayAdapter<Player> {
         private final Context context;
         //private ArrayList<Player> playerList = null;
@@ -132,6 +157,7 @@ public class LobbyFragment extends Fragment {
             textView.setTypeface(MainActivity.handwritingFont);
 
             final Player p = mPlayersConnected.get(position);
+            textView.setTextColor(Color.parseColor(p.color));
             if(p!= null) {
                 textView.setText(p.name);
                 if(p.ready)

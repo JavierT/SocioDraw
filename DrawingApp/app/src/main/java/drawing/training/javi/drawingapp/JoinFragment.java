@@ -54,17 +54,20 @@ public class JoinFragment extends Fragment {
                         if(ib.getId()!=mCurrPaint.getId())
                              ib.getBackground().setAlpha(50);
                     }
-                    mReadyButton.setText(getString(R.string.join_Ready));
-                    mReadyButton.setTextColor(Color.GREEN);
+                    mReadyButton.setText(getString(R.string.join_NotReady));
+                    mReadyButton.setTextColor(Color.RED);
+
                 }
-                else { setNotReady(); }
+                else {
+                    setNotReady();
+                }
                 mCallbackReady.setReady(mReadyState);
             }
         });
 
         // Color picker
-        LinearLayout paintLayout = (LinearLayout)rootView.findViewById(R.id.paint_colors);
-        mCurrPaint = (ImageButton)paintLayout.getChildAt(0);
+        //LinearLayout paintLayout = (LinearLayout)rootView.findViewById(R.id.paint_colors);
+        //mCurrPaint = (ImageButton)paintLayout.getChildAt(0);
         //mCurrPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
         mCurrPaint = null; // By default, no color selected.
 
@@ -127,8 +130,8 @@ public class JoinFragment extends Fragment {
 
     public void setNotReady() {
         mReadyState = false;
-        mReadyButton.setText(getString(R.string.join_NotReady));
-        mReadyButton.setTextColor(Color.RED);
+        mReadyButton.setText(getString(R.string.join_Ready));
+        mReadyButton.setTextColor(Color.GREEN);
         for(ImageButton ib: mColors) {
                 ib.getBackground().setAlpha(255);
         }
@@ -148,7 +151,7 @@ public class JoinFragment extends Fragment {
             if(!colors.contains(ib.getTag()))
             {
                 ib.setClickable(false);
-                ib.setAlpha(50);
+                ib.getBackground().setAlpha(50);
             }
         }
     }
