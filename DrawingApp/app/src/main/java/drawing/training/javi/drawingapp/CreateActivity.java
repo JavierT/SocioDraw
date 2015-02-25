@@ -1,6 +1,7 @@
 package drawing.training.javi.drawingapp;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -10,6 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.alljoyn.bus.BusAttachment;
@@ -39,6 +41,7 @@ public class CreateActivity extends ActionBarActivity
     private static final int MESSAGE_SET_NEW_PLAYER= 1;
     private static final int MESSAGE_POST_TOAST = 2;
     private static final int MESSAGE_UPDATE_PLAYER = 3;
+    private static final int MESSAGE_COLOR_SELECTED = 4;
 
     public static final int SERVICE_CONNECT = 1;
     public static final int SERVICE_DISCONNECT = 2;
@@ -56,6 +59,14 @@ public class CreateActivity extends ActionBarActivity
                     break;
                 case MESSAGE_POST_TOAST:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
+                    break;
+                case MESSAGE_COLOR_SELECTED:
+                    String name = (String) msg.obj;
+                    Toast toast = Toast.makeText(getApplicationContext(), "The player " + name + "has taken this color", Toast.LENGTH_SHORT);
+                    TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+                    v.setTextColor(Color.parseColor(mCurrentPlayers.get(name).color));
+                    toast.show();
+                    // Optional set name of player in that color.
                     break;
                 default:
                     break;
@@ -76,10 +87,12 @@ public class CreateActivity extends ActionBarActivity
     //private DrawingInterface mInterface;
 
     protected HashMap<String, Player> mCurrentPlayers;
+    private HashMap<String,Boolean> mColorsAvailable;
     private String mJoinerName;
     private int mSessionId;
     private boolean mAllPlayersReady;
     //private int mPlayersConnected;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +118,19 @@ public class CreateActivity extends ActionBarActivity
         mDrawingService = new DrawingService();
         //mSignalService = new SignalService();
         mBusHandler.sendEmptyMessage(SERVICE_CONNECT);
+
+        // Fill the colors dictionary
+        mColorsAvailable = new HashMap<>();
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.blue))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.red))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.yellow))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.darkblue))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.orange))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.purple))),false);
+        mColorsAvailable.put(String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.green))),false);
+
+
 
     }
 
@@ -165,7 +191,7 @@ public class CreateActivity extends ActionBarActivity
                 p.name = name;
                 p.ready = false;
                 p.score = 0;
-                p.color = "#FFFFFFF";
+                p.color = String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black)));
                 mCurrentPlayers.put(name, p);
                 sendUiMessage(MESSAGE_SET_NEW_PLAYER, mCurrentPlayers.get(name));
 
@@ -222,7 +248,7 @@ public class CreateActivity extends ActionBarActivity
                 result[0].name = "Please close the app and open again";
                 result[0].ready = false;
                 result[0].score = -1;
-                result[0].color = "#FFFFFF";
+                result[0].color = String.format("%06X", (0xFFFFFF & getResources().getColor(R.color.black)));
                 msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
             } else {
                 result = new Player[mCurrentPlayers.size()];
@@ -236,7 +262,7 @@ public class CreateActivity extends ActionBarActivity
         /**
          * Returns the status of the lobby. It can be WAITING = 0
          *
-         * @return
+         * @return Returns false if the players is not found in the Current Players List.
          * @throws BusException
          */
         public boolean setPlayerStatus(String name, boolean status) throws BusException {
@@ -248,6 +274,37 @@ public class CreateActivity extends ActionBarActivity
                 sendUiMessage(MESSAGE_UPDATE_PLAYER,name);
                 mAllPlayersReady = checkStatus();
                 return true;
+            }
+        }
+
+        /**
+         * Returns the status of the lobby. It can be WAITING = 0
+         *
+         * @return Returns a list of the available colors.
+         * @throws BusException
+         */
+        public String[] setPlayerColor(String name, String color) throws BusException {
+            if(!mCurrentPlayers.containsKey(name))
+                return null;
+            else
+            {
+                ArrayList<String> colorsAvailable = new ArrayList<>();
+                if(mColorsAvailable.get(color))
+                {
+                    // Color already taken. Return array with -1 in first item
+                    colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
+                }
+                else {
+                    mCurrentPlayers.get(name).color = color;
+                    sendUiMessage(MESSAGE_COLOR_SELECTED,name);
+                    mColorsAvailable.put(color, true);
+                }
+                // Return table with available colors
+                for(String s : mColorsAvailable.keySet()) {
+                    if(mColorsAvailable.get(s))
+                        colorsAvailable.add(s);
+                }
+                return (String[]) colorsAvailable.toArray();
             }
         }
 
@@ -275,7 +332,9 @@ public class CreateActivity extends ActionBarActivity
     }
 
     private boolean checkStatus() {
-        boolean ready = false;
+        if(mCurrentPlayers.size()<2)
+            return false;
+        boolean ready = true;
         for(Player p: mCurrentPlayers.values()) {
             ready = ready && p.ready;
         }

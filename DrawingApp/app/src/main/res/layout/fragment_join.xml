@@ -49,10 +49,10 @@
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FF660000"
+                android:background="@color/black"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FF660000"/>
+                android:tag="@color/black"/>
 
             <Space
                 android:layout_width="wrap_content"
@@ -64,10 +64,10 @@
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FFFF0000"
+                android:background="@color/red"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FFFF0000" />
+                android:tag="@color/red" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -79,10 +79,10 @@
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FFFF6600"
+                android:background="@color/yellow"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FFFF6600" />
+                android:tag="@color/yellow" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -94,25 +94,31 @@
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FFFFCC00"
+                android:background="@color/green"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FFFFCC00" />
+                android:tag="@color/green" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:orientation="horizontal">
+
 
             <ImageButton
                 android:id="@+id/ibColor5"
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FF009900"
+                android:background="@color/blue"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FF009900" />
+                android:tag="@color/blue" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -124,10 +130,40 @@
                 android:layout_width="@dimen/large_brush"
                 android:layout_height="@dimen/large_brush"
                 android:layout_margin="5dp"
-                android:background="#FF009999"
+                android:background="@color/darkblue"
                 android:contentDescription="@string/paint"
                 android:src="@drawable/paint"
-                android:tag="#FF009999" />
+                android:tag="@color/darkblue" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/ibColor7"
+                android:layout_width="@dimen/large_brush"
+                android:layout_height="@dimen/large_brush"
+                android:layout_margin="5dp"
+                android:background="@color/purple"
+                android:contentDescription="@string/paint"
+                android:src="@drawable/paint"
+                android:tag="@color/purple" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/ibColor8"
+                android:layout_width="@dimen/large_brush"
+                android:layout_height="@dimen/large_brush"
+                android:layout_margin="5dp"
+                android:background="@color/orange"
+                android:contentDescription="@string/paint"
+                android:src="@drawable/paint"
+                android:tag="@color/orange" />
 
         </LinearLayout>
     </LinearLayout>

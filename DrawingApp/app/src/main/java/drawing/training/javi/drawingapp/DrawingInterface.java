@@ -21,10 +21,7 @@ public interface DrawingInterface {
 
     public static final int MAX_PLAYERS = 6;
 
-    public static final int LOBBY_STATUS_WAITING = 0;
-    public static final int LOBBY_STATUS_NEEDUPDATE = 1;
-    public static final int LOBBY_STATUS_PLAY = 2;
-
+    public static final String NOT_AVAILABLE = "NOT_AVAILABLE";
 
 
     /*
@@ -46,6 +43,9 @@ public interface DrawingInterface {
 
     @BusMethod
     boolean setPlayerStatus(String name, boolean status) throws BusException;
+
+    @BusMethod (signature="ss", replySignature = "as")
+    String[] setPlayerColor(String name, String color) throws BusException;
 
     @BusSignal
     public void updatePlayerTables() throws BusException;

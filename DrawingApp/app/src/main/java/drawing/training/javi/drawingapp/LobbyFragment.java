@@ -1,10 +1,8 @@
 package drawing.training.javi.drawingapp;
 
 
-
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,10 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,10 +23,7 @@ public class LobbyFragment extends Fragment {
 
     private PlayerArrayAdapter mListViewArrayAdapter;
     private ListView mListView;
-    private View rootView;
-    private ImageButton currPaint;
-    private boolean mReadyState = false;
-    //private int paintColor = 0xFF660000;
+
     private Button mReadyButton;
     private ArrayList<Player> mPlayersConnected;
 
@@ -59,7 +52,7 @@ public class LobbyFragment extends Fragment {
 
         mListView = (ListView) rootView.findViewById(R.id.lvPlayers);
 
-        mPlayersConnected = new ArrayList<Player>();
+        mPlayersConnected = new ArrayList<>();
         mListViewArrayAdapter = new PlayerArrayAdapter(getActivity());
 
         mListView.setAdapter(mListViewArrayAdapter);
@@ -85,8 +78,7 @@ public class LobbyFragment extends Fragment {
         int position = 0;
         for (int i=0; i<mPlayersConnected.size(); i++)
         {
-            final Player p = mPlayersConnected.get(i);
-            if(p.name.equals(name))
+            if(mPlayersConnected.get(i).name.equals(name))
                 position = i;
 
         }
@@ -96,7 +88,7 @@ public class LobbyFragment extends Fragment {
             return false;
         }
         else {
-            final Player p = mListViewArrayAdapter.getItem(position);
+            Player p = mListViewArrayAdapter.getItem(position);
             if(p!= null) {
                 p.ready = status;
                 mListViewArrayAdapter.notifyDataSetChanged();
@@ -112,6 +104,7 @@ public class LobbyFragment extends Fragment {
 
     public void newPlayerToAdd(Player p) {
         mPlayersConnected.add(p);
+        mListViewArrayAdapter.add(p);
         mListViewArrayAdapter.notifyDataSetChanged();
     }
 

@@ -34,7 +34,7 @@ import java.util.Arrays;
 
 
 public class JoinActivity extends ActionBarActivity
-    implements JoinFragment.setPlayerReady {
+    implements JoinFragment.setPlayerReady, JoinFragment.setPlayerColor {
     /* Load the native alljoyn_java library */
     static {
         System.loadLibrary("alljoyn_java");
@@ -46,6 +46,7 @@ public class JoinActivity extends ActionBarActivity
     private static final int MESSAGE_STOP_PROGRESS_DIALOG = 4;
     private static final int MESSAGE_REQUEST_NEW_USERNAME = 5;
     private static final int MESSAGE_SET_NOT_READY = 6;
+    private static final int MESSAGE_COLORS_UPDATE = 7;
 
     private String mUsername;
     private static final String TAG = "DrawingClient";
@@ -81,6 +82,16 @@ public class JoinActivity extends ActionBarActivity
                 case MESSAGE_SET_NOT_READY:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     mJoinFragment.setNotReady();
+                case MESSAGE_COLORS_UPDATE:
+                    ArrayList<String> ac = (ArrayList<String>) msg.obj;
+                    if(ac != null) {
+                        if (ac.get(0).equals(DrawingInterface.NOT_AVAILABLE)) { // Color already taken
+                            ac.remove(0);
+                            Toast.makeText(getApplicationContext(), "Someone took already that color, please choose another", Toast.LENGTH_LONG).show();
+                            mJoinFragment.setDefaultColor();
+                        }
+                        mJoinFragment.setAvailableColors(ac);
+                    }
                 default:
                     break;
             }
@@ -179,16 +190,21 @@ public class JoinActivity extends ActionBarActivity
      * @param ready
      */
     public void setReady(boolean ready) {
+
         Message msg = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SET_READY,ready);
         mBusHandler.sendMessage(msg);
     }
 
+    /**
+     * Interface coming from the Join fragment. Color button selected.
+     * @param color
+     */
+    public void setColor(String color) {
+        Message msg = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SET_COLOR, color);
+        mBusHandler.sendMessage(msg);
+    }
 
-    // Coming from the Client fragment to send a ping with the message in the args     //
-//    public void sendMessage(String msg) {
-//        Message reply = mBusHandler.obtainMessage(DrawingInterface.PING, mUsername);
-//        mBusHandler.sendMessage(reply);
-//    }
+
 
 
 
@@ -219,6 +235,7 @@ public class JoinActivity extends ActionBarActivity
         public static final int CLIENT_SET_READY = 5;
         public static final int CLIENT_GETPLAYERS = 6;  /* NOT NEEDED IF SIGNAL DONT WORK, DONT SHOW PLAYERS TABLE IN EACH DEVICE */
         public static final int CLIENT_WAITING = 7;
+        public static final int CLIENT_SET_COLOR = 8;
 
         public ClientBusHandler (Looper looper) {
             super(looper);
@@ -355,7 +372,7 @@ public class JoinActivity extends ActionBarActivity
                         status = mBus.registerSignalHandlers(this);
                         if (status != Status.OK) {
                             logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
-                            sendMessage(obtainMessage(CLIENT_DISCONNECT));
+                            //sendMessage(obtainMessage(CLIENT_DISCONNECT));
                             //return;
                         }
 
@@ -414,6 +431,27 @@ public class JoinActivity extends ActionBarActivity
                         //return;
                     }
 
+                    break;
+                }
+
+                case CLIENT_SET_COLOR: {
+                    Log.d("DrawingApp" , msg.toString());
+                    String param = (String)msg.obj;
+                    try {
+                        String[] colors = mDrawingInterface.setPlayerColor(mUsername, param);
+
+                        if(colors == null)
+                            sendUiMessage(MESSAGE_POST_TOAST, "This is weird. Please exit and enter again");
+                        else
+                        {
+                            ArrayList<String> ac = new ArrayList<>(Arrays.asList(colors));
+                            sendUiMessage(MESSAGE_COLORS_UPDATE, ac);
+                        }
+                    } catch (BusException e) {
+                        logException("DrawingInterface.setPlayerColor()", e);
+                        sendUiMessage(MESSAGE_SET_NOT_READY, "Color can't be sent");
+                        return;
+                    }
                     break;
                 }
 
