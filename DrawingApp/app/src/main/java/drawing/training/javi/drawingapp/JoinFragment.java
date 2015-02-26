@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -116,10 +115,6 @@ public class JoinFragment extends Fragment {
             ImageButton imgView = (ImageButton)view;
             String color = view.getTag().toString();
 
-
-            // TESTING
-            Toast.makeText(getActivity(), "Color picked: " + color, Toast.LENGTH_LONG).show();
-
             imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
             if(mCurrPaint!= null) //If there is one already selected
                 mCurrPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
@@ -161,7 +156,7 @@ public class JoinFragment extends Fragment {
                     && ib!=mCurrPaint)
             {
                 ib.setClickable(false);
-                ib.getBackground().setAlpha(50);
+                ib.getBackground().setAlpha(30);
             }
         }
     }

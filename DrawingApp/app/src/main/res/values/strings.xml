@@ -10,8 +10,8 @@
     <string name="paint">Paint</string>
     <string name="username">Username</string>
     <string name="welcome">Welcome</string>
-    <string name="title_activity_create">Creating Imaginary Game</string>
-    <string name="title_activity_join">Joining Imaginary Game</string>
+    <string name="title_activity_create">Imaginary</string>
+    <string name="title_activity_join">Imaginary</string>
     <string name="enter_message_hint">Enter message</string>
     <string name="action_quit">Quit</string>
     <string name="create_as_player">Device as player</string>

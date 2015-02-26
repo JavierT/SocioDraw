@@ -118,8 +118,7 @@ public class JoinActivity extends ActionBarActivity
                 String text = input.getText().toString();
                 if(!text.isEmpty()) {
                     mUsername = text;
-                    mBusHandler.sendEmptyMessage(mBusHandler.CLIENT_REQUEST_NEW_NAME);
-                    alert.cancel();
+                    mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_REQUEST_NEW_NAME);
                 }
 
             }
@@ -191,7 +190,7 @@ public class JoinActivity extends ActionBarActivity
 
     /**
      * Interface coming from the Join fragment. Ready button clicked.
-     * @param ready
+     * @param ready Set the button ready behaviour
      */
     public void setReady(boolean ready) {
 
@@ -201,7 +200,7 @@ public class JoinActivity extends ActionBarActivity
 
     /**
      * Interface coming from the Join fragment. Color button selected.
-     * @param color
+     * @param color Set the color chosen in the fragment
      */
     public void setColor(String color) {
         Message msg = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SET_COLOR, color);
@@ -230,7 +229,6 @@ public class JoinActivity extends ActionBarActivity
         //private boolean mIsInASession;
         private boolean mIsConnected;
         private boolean mIsStoppingDiscovery;
-        private boolean mWaiting = true;
 
         public static final int CLIENT_CONNECT = 1;
         public static final int CLIENT_JOIN_SESSION = 2;
@@ -257,7 +255,7 @@ public class JoinActivity extends ActionBarActivity
             //mPlayersConnected = new ArrayList<>();
             //mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
 //            }
-            sendUiMessage(MESSAGE_POST_TOAST, "SIGNAL RECEIVEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEED");
+            //sendUiMessage(MESSAGE_POST_TOAST, "SIGNAL RECEIVEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEED");
         }
 
         @Override
@@ -415,6 +413,13 @@ public class JoinActivity extends ActionBarActivity
                 //Release all resources acquired in the connect
                 case CLIENT_DISCONNECT: {
                     mIsStoppingDiscovery = true;
+                    try{
+                        mDrawingInterface.setDisconnect(mUsername);
+                    } catch (BusException e) {
+                        logException("DrawingInterface.disconnect()", e);
+                        sendUiMessage(MESSAGE_POST_TOAST,"Can't disconnect");
+                        return;
+                    }
                     if (mIsConnected) {
                         Status status = mBus.leaveSession(mSessionId);
                         logStatus("BusAttachment.leaveSession()", status);
@@ -428,12 +433,13 @@ public class JoinActivity extends ActionBarActivity
                 case CLIENT_GETPLAYERS: {
                     /* Register the signals, to see if they want to work....*/
                     //SignalHandlers signalHandlers = new SignalHandlers();
-                    Status status = mBus.registerSignalHandlers(this);
-                    if (status != Status.OK) {
+                    //Status status = mBus.registerSignalHandlers(this);
+                    //if (status != Status.OK) {
                         logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
                         //sendMessage(obtainMessage(DrawingInterface.DISCONNECT));
                         //return;
-                    }
+
+                    //}
 
                     break;
                 }
@@ -472,18 +478,16 @@ public class JoinActivity extends ActionBarActivity
                         sendUiMessage(MESSAGE_SET_NOT_READY, "Status can't be sent");
                         return;
                     }
-                    if(ready) {
+                    //if(ready) {
                         // As the signals are not working, we go to waiting state.
                         //sendEmptyMessage(CLIENT_WAITING);
-                    }
+                    // }
                     break;
                 }
 
                 case CLIENT_WAITING: {
                     try {
-                        while(mWaiting) {
-                            Thread.sleep(3000);
-                        }
+                        Thread.sleep(3000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

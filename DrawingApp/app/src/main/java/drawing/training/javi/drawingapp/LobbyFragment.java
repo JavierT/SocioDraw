@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,6 +41,8 @@ public class LobbyFragment extends Fragment {
 
         mReadyButton = (Button) rootView.findViewById(R.id.btnLobbyStart);
         mReadyButton.setTypeface(MainActivity.handwritingFont);
+        mReadyButton.setTextColor(Color.RED);
+        mReadyButton.setClickable(false);
         mReadyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,27 +77,34 @@ public class LobbyFragment extends Fragment {
 
 
     public boolean setReady(String name, boolean status) {
-        int position = 0;
-        for (int i=0; i<mPlayersConnected.size(); i++)
-        {
-            if(mPlayersConnected.get(i).name.equals(name))
-                position = i;
 
-        }
+        int position = getPlayer(name);
         if(position > mListViewArrayAdapter.getCount())
         {
             // Out of bounds
             return false;
         }
         else {
-            Player p = mListViewArrayAdapter.getItem(position);
-            if(p!= null) {
-                p.ready = status;
+                mPlayersConnected.get(position).ready = status;
+                mListViewArrayAdapter.getItem(position).ready = status;
                 mListViewArrayAdapter.notifyDataSetChanged();
                 return true;
-            }
         }
-        return false;
+    }
+
+    public void removePlayer(String name) {
+        int pos = getPlayer(name);
+        mListViewArrayAdapter.remove(mPlayersConnected.get(pos));
+        mPlayersConnected.remove(pos);
+        mListViewArrayAdapter.notifyDataSetChanged();
+    }
+
+    public void updateStartGameButton(boolean status) {
+        mReadyButton.setClickable(status);
+        if(!status)
+            mReadyButton.setTextColor(Color.RED);
+        else
+            mReadyButton.setTextColor(Color.GREEN);
     }
 
     public interface setStartGame {
@@ -110,27 +118,22 @@ public class LobbyFragment extends Fragment {
     }
 
     public boolean updatePlayerColor(String name, String color) {
-        int position = 0;
-        for (int i=0; i<mPlayersConnected.size(); i++)
-        {
-            if(mPlayersConnected.get(i).name.equals(name))
-                position = i;
-
-        }
+        int position = getPlayer(name);
         if(position > mListViewArrayAdapter.getCount())
         {
             // Out of bounds
             return false;
         }
         else {
-            Player p = mListViewArrayAdapter.getItem(position);
-            if(p!= null) {
-                p.color = color;
-                mListViewArrayAdapter.notifyDataSetChanged();
-                return true;
-            }
+            //Player p = mListViewArrayAdapter.getItem(position);
+            //if(p!= null) {
+            mPlayersConnected.get(position).color = color;
+                //p.color = color;
+            mListViewArrayAdapter.notifyDataSetChanged();
+            return true;
+            //}
         }
-        return false;
+        //return false;
     }
 
     private class PlayerArrayAdapter extends ArrayAdapter<Player> {
@@ -155,21 +158,37 @@ public class LobbyFragment extends Fragment {
             TextView textView = (TextView) rowView.findViewById(R.id.txtPlayerName);
             ImageView imageView = (ImageView) rowView.findViewById(R.id.ivPlayerStatus);
             textView.setTypeface(MainActivity.handwritingFont);
+            textView.setTextSize(24);
 
             final Player p = mPlayersConnected.get(position);
             textView.setTextColor(Color.parseColor(p.color));
-            if(p!= null) {
-                textView.setText(p.name);
-                if(p.ready)
-                    imageView.setImageResource(R.mipmap.ic_ok);
-                else
-                    imageView.setImageResource(R.mipmap.ic_no);
-            }
+            textView.setText(p.name);
+            if(p.ready)
+                imageView.setImageResource(R.mipmap.ic_ok);
+            else
+                imageView.setImageResource(R.mipmap.ic_no);
             return rowView;
         }
 
 
     }
 
+    private int getPlayer(String name) {
+        int position = 0;
+        for (int i=0; i<mPlayersConnected.size(); i++)
+        {
+            if(mPlayersConnected.get(i).name.equals(name))
+                position = i;
+
+        }
+        if(position > mPlayersConnected.size())
+        {
+            // Out of bounds
+            return -1;
+        }
+        else {
+            return position;
+        }
+    }
 
 }

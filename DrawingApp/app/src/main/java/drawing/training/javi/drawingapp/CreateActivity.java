@@ -1,7 +1,6 @@
 package drawing.training.javi.drawingapp;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -42,6 +41,8 @@ public class CreateActivity extends ActionBarActivity
     private static final int MESSAGE_POST_TOAST = 2;
     private static final int MESSAGE_UPDATE_PLAYER = 3;
     private static final int MESSAGE_COLOR_SELECTED = 4;
+    private static final int MESSAGE_REMOVE_PLAYER = 5;
+    private static final int MESSAGE_SET_GAME_READY = 6;
 
     public static final int SERVICE_CONNECT = 1;
     public static final int SERVICE_DISCONNECT = 2;
@@ -63,10 +64,15 @@ public class CreateActivity extends ActionBarActivity
                 case MESSAGE_COLOR_SELECTED:
                     String name = (String) msg.obj;
                     Toast toast = Toast.makeText(getApplicationContext(), "The player " + name + "has taken this color", Toast.LENGTH_SHORT);
-                    TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+                    toast.getView().findViewById(android.R.id.message);
                     mLobbyFragment.updatePlayerColor(name,mCurrentPlayers.get(name).color);
                     // Optional set name of player in that color.
                     break;
+                case MESSAGE_REMOVE_PLAYER:
+                    Toast.makeText(getApplicationContext(), "The player " + msg.obj + " left the game", Toast.LENGTH_LONG).show();
+                    mLobbyFragment.removePlayer((String) msg.obj);
+                case MESSAGE_SET_GAME_READY:
+                    mLobbyFragment.updateStartGameButton(mAllPlayersReady);
                 default:
                     break;
             }
@@ -120,13 +126,13 @@ public class CreateActivity extends ActionBarActivity
 
         // Fill the colors dictionary
         mColorsAvailable = new HashMap<>();
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.blue))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.red))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.yellow))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.darkblue))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.orange))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.purple))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.black))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.blue))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.red))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.yellow))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.darkblue))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.orange))),false);
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
         mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.green))),false);
 
 
@@ -165,6 +171,7 @@ public class CreateActivity extends ActionBarActivity
     }
 
     public void startGame() {
+
         mDrawingService.sendUiMessage(MESSAGE_POST_TOAST,"STAAART THE GAMEEEE");
     }
 
@@ -291,7 +298,6 @@ public class CreateActivity extends ActionBarActivity
             }
             else
             {
-                String aux = color.toUpperCase();
                 if(mColorsAvailable.get(color.toUpperCase()))
                 {
                     // Color already taken. Return array with -1 in first item
@@ -325,10 +331,22 @@ public class CreateActivity extends ActionBarActivity
             return colorTable;
         }
 
+
+        public boolean setDisconnect(String name) {
+            if(!mCurrentPlayers.containsKey(name))
+                return false;
+            String color = mCurrentPlayers.get(name).color;
+            if(mColorsAvailable.containsKey(color))
+                mColorsAvailable.put(color,false);
+            mCurrentPlayers.remove(name);
+            sendUiMessage(MESSAGE_REMOVE_PLAYER,name);
+            return true;
+        }
+
         /**
          * Returns the status of the lobby. It can be WAITING = 0
          *
-         * @return
+         * @return Return if all players are ready to play
          * @throws BusException
          */
         public boolean getLobbyStatus() throws BusException {
@@ -355,6 +373,7 @@ public class CreateActivity extends ActionBarActivity
         for(Player p: mCurrentPlayers.values()) {
             ready = ready && p.ready;
         }
+        mHandler.sendEmptyMessage(MESSAGE_SET_GAME_READY);
         return ready;
     }
 
@@ -480,14 +499,8 @@ public class CreateActivity extends ActionBarActivity
                         @Override
                         public boolean acceptSessionJoiner(short sessionPort, String joiner, SessionOpts sessionOpts) {
                             logStatus(String.format("BusAttachment.acceptSessionJoiner(%s)",joiner),  Status.OK);
-                            if((sessionPort == DrawingInterface.CONTACT_PORT)/*&& (mPlayersConnected <= DrawingInterface.MAX_PLAYERS) */)
-                            {
-                                // Allow the connection
-                                //mPlayersConnected++;
-                                return true;
-                            }
-                            else
-                                return false;
+
+                            return (sessionPort == DrawingInterface.CONTACT_PORT);
                         }
 
                         @Override
@@ -495,10 +508,10 @@ public class CreateActivity extends ActionBarActivity
                             mSessionId = id;
                             mJoinerName = joiner;
                             // TODO This emitter does not work. It is registered but the client doesnt' find the signal
-                            if(mEmitter == null) {
-                                mEmitter = new SignalEmitter(mDrawingService, mSessionId, SignalEmitter.GlobalBroadcast.On);
+                            //if(mEmitter == null) {
+                                //mEmitter = new SignalEmitter(mDrawingService, mSessionId, SignalEmitter.GlobalBroadcast.On);
                                 //mInterface = mEmitter.getInterface(DrawingInterface.class);
-                            }
+                            //}
                         }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",

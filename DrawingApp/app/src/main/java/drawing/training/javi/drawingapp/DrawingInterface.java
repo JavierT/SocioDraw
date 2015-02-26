@@ -49,9 +49,11 @@ public interface DrawingInterface {
     @BusMethod(signature="ss", replySignature = "as")
     String[] setPlayerColor(String name, String color) throws BusException;
 
-    @BusSignal
-    public void updatePlayerTables() throws BusException;
+    //@BusSignal
+    //public void updatePlayerTables() throws BusException;
 
+    @BusMethod
+    boolean setDisconnect(String mUsername) throws BusException;
 }
 
 
