@@ -45,6 +45,7 @@ public interface DrawingInterface {
     @BusMethod
     boolean setPlayerStatus(String name, boolean status) throws BusException;
 
+    //@BusMethod(signature="ss", replySignature = "as")
     @BusMethod(signature="ss", replySignature = "as")
     String[] setPlayerColor(String name, String color) throws BusException;
 

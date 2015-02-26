@@ -114,7 +114,7 @@ public class JoinFragment extends Fragment {
     private void paintClicked(View view) {
         if(view!= mCurrPaint && !mReadyState) {
             ImageButton imgView = (ImageButton)view;
-            String color = view.getTag().toString().substring(1);
+            String color = view.getTag().toString();
 
 
             // TESTING
@@ -137,6 +137,10 @@ public class JoinFragment extends Fragment {
         }
     }
 
+    /**
+     * As the color selected is not available, we deselect any image button
+     * chose.
+     */
     public void setDefaultColor() {
         if(mReadyState)
             setNotReady();
@@ -145,10 +149,16 @@ public class JoinFragment extends Fragment {
         mCurrPaint = null;
     }
 
+    /**
+     * If the color of the image button is not in the list and
+     * it is not the one selected, we put it as unavailable.
+     * @param colors: List of available colors..
+     */
     public void setAvailableColors(ArrayList<String> colors) {
         for(ImageButton ib: mColors) {
 
-            if(!colors.contains(ib.getTag()))
+            if(!colors.contains(ib.getTag().toString().toUpperCase())
+                    && ib!=mCurrPaint)
             {
                 ib.setClickable(false);
                 ib.getBackground().setAlpha(50);

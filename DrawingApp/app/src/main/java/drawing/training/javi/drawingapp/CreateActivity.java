@@ -120,14 +120,14 @@ public class CreateActivity extends ActionBarActivity
 
         // Fill the colors dictionary
         mColorsAvailable = new HashMap<>();
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.black))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.blue))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.red))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.yellow))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.darkblue))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.orange))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.purple))),false);
-        mColorsAvailable.put(String.format("%08X", (0xFFFFFFFF & getResources().getColor(R.color.green))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.blue))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.red))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.yellow))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.darkblue))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.orange))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.purple))),false);
+        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.green))),false);
 
 
 
@@ -300,9 +300,12 @@ public class CreateActivity extends ActionBarActivity
                 }
                 else {
                     Log.d("DrawingApp Server","Color available ");
-                    mCurrentPlayers.get(name).color = "#"+color;
+                    // Get previous color get by the player:
+                    String oldColor = mCurrentPlayers.get(name).color;
+                    mColorsAvailable.put(oldColor, false);
+                    mCurrentPlayers.get(name).color = color.toUpperCase();
                     sendUiMessage(MESSAGE_COLOR_SELECTED,name);
-                    mColorsAvailable.put(color, true);
+                    mColorsAvailable.put(color.toUpperCase(), true);
                 }
                 // Return table with available colors
                 for(String s : mColorsAvailable.keySet()) {
@@ -314,9 +317,11 @@ public class CreateActivity extends ActionBarActivity
                 if(mColorsAvailable.isEmpty())
                     colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
             }
-            String[] colorTable;
-            colorTable = new String[mColorsAvailable.size()];
+            String[] colorTable = new String[colorsAvailable.size()];
+            //for(int i=0; i<colorsAvailable.size(); i++)
+            //        colorTable[i]=colorsAvailable.get(i);
             colorTable = colorsAvailable.toArray(colorTable);
+            Log.d("DrawingApp Server","color table values: " + colorTable.length);
             return colorTable;
         }
 
