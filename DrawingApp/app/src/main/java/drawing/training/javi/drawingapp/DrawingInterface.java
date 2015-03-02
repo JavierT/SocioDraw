@@ -36,27 +36,18 @@ public interface DrawingInterface {
     @BusMethod(signature="s", replySignature = "b")
     boolean newPlayerConnected(String inStr) throws BusException;
 
-    @BusMethod(replySignature = "ar")
-    Player[] getPlayers() throws BusException;
-
     @BusMethod
-    boolean getLobbyStatus() throws BusException;
+    int getLobbyStatus() throws BusException;
 
     @BusMethod
     boolean setPlayerStatus(String name, boolean status) throws BusException;
 
-    //@BusMethod(signature="ss", replySignature = "as")
     @BusMethod(signature="ss", replySignature = "as")
     String[] setPlayerColor(String name, String color) throws BusException;
-
-    //@BusSignal
-    //public void updatePlayerTables() throws BusException;
 
     @BusMethod
     boolean setDisconnect(String mUsername) throws BusException;
 
-    @BusMethod
-    int getCountdown() throws BusException;
 }
 
 

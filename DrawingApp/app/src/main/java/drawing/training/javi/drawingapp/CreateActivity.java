@@ -89,7 +89,6 @@ public class CreateActivity extends ActionBarActivity
 
     // The Alljoyn object that is our service
     private DrawingService mDrawingService;
-    //private SignalService mSignalService;
 
     // Handler used to make calls to Alljoyn methods
     private Handler mBusHandler;
@@ -103,9 +102,7 @@ public class CreateActivity extends ActionBarActivity
     private boolean mAllPlayersReady = false;
     private ProgressDialog myProgressDialog;
     private ScreenFragment mScreenFragment;
-    private CountDownTimer mTimer;
-    private int mSecondsToStart;
-    private boolean mStartingGame = false;
+    private int mSecondsToStart = -1;
 
 
     @Override
@@ -130,7 +127,6 @@ public class CreateActivity extends ActionBarActivity
 
         //Start our service
         mDrawingService = new DrawingService();
-        //mSignalService = new SignalService();
         mBusHandler.sendEmptyMessage(SERVICE_CONNECT);
 
         // Fill the colors dictionary
@@ -182,14 +178,13 @@ public class CreateActivity extends ActionBarActivity
      * with the players and the game changes to the drawing fragment
      */
     public void startGame() {
-        mStartingGame = true;
         myProgressDialog = new ProgressDialog(this);
         myProgressDialog.setTitle("Starting the game");
         myProgressDialog.setMessage("The game will start in 5 seconds...");
         myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         myProgressDialog.show();
         mSecondsToStart = Constants.countdownTimer;
-        mTimer = new CountDownTimer(Constants.countdownTimer*1000, 1000) {
+        new CountDownTimer(Constants.countdownTimer*1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 mSecondsToStart--;
@@ -243,70 +238,13 @@ public class CreateActivity extends ActionBarActivity
                 mCurrentPlayers.put(name, p);
                 sendUiMessage(MESSAGE_SET_NEW_PLAYER, mCurrentPlayers.get(name));
 
-                /*Emit signal of a new player connected */
-                if(mDrawingService != null && mCurrentPlayers.size()>0) {
-                    Player[] result = new Player[mCurrentPlayers.size()];
-                    result = mCurrentPlayers.values().toArray(result);
-                    try {
-                        mDrawingService.updatePlayerTables(/*result*/);
-                        msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "New player connected");
-                    } catch (BusException e) {
-                        msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
-                        logStatus("newPlayerConnected.updatePlayerTables() signal" + e.toString(), Status.BUS_ERRORS);
-                        e.printStackTrace();
-                        mCurrentPlayers.remove(name);
-                    }
-                    mHandler.sendMessage(msg);
-                }
                 return true;
             }
         }
 
         //
 
-        /**
-         * METHOD NOT CALLED DUE TO THE SIGNALS FAILURE
-         * Method to get all the players connected to the server.
-         * @return An array with all the players data currently connected
-         * @throws BusException
-         */
-        public Player[] getPlayers() throws BusException {
-            Message msg;
-            /*Emit signal of a new player connected */
-            if(mDrawingService != null && mCurrentPlayers.size()>0) {
-                Player[] result = new Player[mCurrentPlayers.size()];
-                result = mCurrentPlayers.values().toArray(result);
-                try {
-                    mDrawingService.updatePlayerTables(/*result*/);
-                    msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Get players called");
-                } catch (BusException e) {
-                    msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error getting the players");
-                    logStatus("newPlayerConnected.updatePlayerTables() signal" + e.toString(), Status.BUS_ERRORS);
-                    e.printStackTrace();
-                }
-                mHandler.sendMessage(msg);
-            }
-            Log.i(TAG, String.format("Client requested a list of players"));
-//            Message msg;
-            Player[] result;
-            if(mCurrentPlayers == null)
-            {
-                // Fill one with the own data sent and send it back. This case shouldn't happen
-                result = new Player[1];
-                result[0] = new Player();
-                result[0].name = "Please close the app and open again";
-                result[0].ready = false;
-                result[0].score = -1;
-                result[0].color = String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black)));
-                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Error sending the players");
-            } else {
-                result = new Player[mCurrentPlayers.size()];
-                result = mCurrentPlayers.values().toArray(result);
-                msg = mHandler.obtainMessage(MESSAGE_POST_TOAST, "Sending players to client");
-            }
-            mHandler.sendMessage(msg);
-            return result;
-        }
+
 
         /**
          * Sets the new status of the player and returns true if it was changed successfully
@@ -397,24 +335,10 @@ public class CreateActivity extends ActionBarActivity
          * @return Return true if the game enters in the countdown state
          * @throws BusException
          */
-        public boolean getLobbyStatus() throws BusException {
-            return mStartingGame;
-        }
+        public int getLobbyStatus() throws BusException {
 
-        /**
-         * Return the countdown time that is remaining.
-         * @return the time in seconds.
-         * @throws BusException
-         */
-        public int getCountdown() throws BusException {
             return mSecondsToStart;
         }
-
-        /**
-         * Signal that tell the clients that a new user has joined the session
-         * @throws BusException
-         */
-        public void updatePlayerTables() throws BusException { /* No code needed here*/}
 
         // Helper function to send a message to the UI thread
         private void sendUiMessage(int what, Object obj) {

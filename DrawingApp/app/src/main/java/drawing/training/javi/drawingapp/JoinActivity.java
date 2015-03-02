@@ -41,7 +41,6 @@ public class JoinActivity extends ActionBarActivity
         System.loadLibrary("alljoyn_java");
     }
 
-    private static final int MESSAGE_PING_REPLY = 1;
     private static final int MESSAGE_POST_TOAST = 2;
     private static final int MESSAGE_START_PROGRESS_DIALOG = 3;
     private static final int MESSAGE_STOP_PROGRESS_DIALOG = 4;
@@ -61,7 +60,6 @@ public class JoinActivity extends ActionBarActivity
 
     protected ArrayList<String> mAvailableColors;
     private boolean mPlayerReady = false;
-    private boolean mCountDownStarted = false;
 
 
     private Handler mHandler = new Handler() {
@@ -70,14 +68,12 @@ public class JoinActivity extends ActionBarActivity
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MESSAGE_PING_REPLY:
-                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_SHORT).show();
-                    break;
                 case MESSAGE_POST_TOAST:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     break;
                 case MESSAGE_START_PROGRESS_DIALOG:
                     mDialog = ProgressDialog.show(JoinActivity.this, "", "Finding Drawing Service.\n Please wait...", true, true);
+                    mDialog.setCancelable(false);
                     break;
                 case MESSAGE_STOP_PROGRESS_DIALOG:
                     mDialog.dismiss();
@@ -255,15 +251,11 @@ public class JoinActivity extends ActionBarActivity
     //////////////////////////////////////////////////////////////////////////////////////////
     class ClientBusHandler extends Handler {
 
-        //private static final String SERVICE_NAME = "drawing.training.javi.drawing";
-        //private static final short CONTACT_PORT = 42;
-
         private BusAttachment mBus;
         private ProxyBusObject mProxyObj;
         private DrawingInterface mDrawingInterface;
 
         private int mSessionId;
-        //private boolean mIsInASession;
         private boolean mIsConnected;
         private boolean mIsStoppingDiscovery;
 
@@ -272,10 +264,8 @@ public class JoinActivity extends ActionBarActivity
         public static final int CLIENT_DISCONNECT = 3;
         public static final int CLIENT_REQUEST_NEW_NAME = 4;
         public static final int CLIENT_SET_READY = 5;
-        public static final int CLIENT_GETPLAYERS = 6;  /* NOT NEEDED IF SIGNAL DONT WORK, DONT SHOW PLAYERS TABLE IN EACH DEVICE */
         public static final int CLIENT_WAITING = 7;
         public static final int CLIENT_SET_COLOR = 8;
-        public static final int CLIENT_STARTING = 9;
 
         public ClientBusHandler (Looper looper) {
             super(looper);
@@ -284,16 +274,6 @@ public class JoinActivity extends ActionBarActivity
             mIsConnected = false;
             mIsStoppingDiscovery = false;
 
-        }
-
-        @BusSignalHandler(iface="drawing.training.javi.drawingapp", signal="updatePlayerTables")
-        public void updatePlayerTables() {
-//            if(playersTable.length == 1 && playersTable[0].score == -1) // Error retrieving the list. Disconnect
-//            {
-            //mPlayersConnected = new ArrayList<>();
-            //mHandler.sendEmptyMessage(MESSAGE_SET_PLAYERS);
-//            }
-            //sendUiMessage(MESSAGE_POST_TOAST, "SIGNAL RECEIVEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEED");
         }
 
         @Override
@@ -417,14 +397,12 @@ public class JoinActivity extends ActionBarActivity
                         }
 
                         try {
-                            if (mDrawingInterface.newPlayerConnected(mUsername)) {
-                                // SEND A READY TO MYSELF TO FILL THE UI.
-                                Message reply = obtainMessage(CLIENT_GETPLAYERS, mUsername);
-                                sendMessage(reply);
+                            if (!mDrawingInterface.newPlayerConnected(mUsername)) {
+                                sendUiMessage(MESSAGE_REQUEST_NEW_USERNAME);
                             }
                         } catch (BusException e) {
                             logException("DrawingInterface.newPlayerConnected()", e);
-                            mHandler.sendEmptyMessage(MESSAGE_REQUEST_NEW_USERNAME);
+                            sendUiMessage(MESSAGE_REQUEST_NEW_USERNAME);
                             return;
                         }
 
@@ -435,10 +413,8 @@ public class JoinActivity extends ActionBarActivity
 
                 case CLIENT_REQUEST_NEW_NAME: {
                     try {
-                        if (mDrawingInterface.newPlayerConnected(mUsername)) {
-                            // SEND A READY TO MYSELF TO FILL THE UI.
-                            Message reply = obtainMessage(CLIENT_GETPLAYERS, mUsername);
-                            sendMessage(reply);
+                        if (!mDrawingInterface.newPlayerConnected(mUsername)) {
+                            sendUiMessage(MESSAGE_REQUEST_NEW_USERNAME);
                         }
                     } catch (BusException e) {
                         logException("DrawingInterface.newPlayerConnected()", e);
@@ -468,22 +444,7 @@ public class JoinActivity extends ActionBarActivity
                     break;
                 }
 
-                case CLIENT_GETPLAYERS: {
-                    /* Register the signals, to see if they want to work....*/
-                    //SignalHandlers signalHandlers = new SignalHandlers();
-                    //Status status = mBus.registerSignalHandlers(this);
-                    //if (status != Status.OK) {
-                        logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
-                        //sendMessage(obtainMessage(DrawingInterface.DISCONNECT));
-                        //return;
-
-                    //}
-
-                    break;
-                }
-
                 case CLIENT_SET_COLOR: {
-                    Log.d("DrawingApp" , "Entrando en set color");
                     String param = (String)msg.obj;
                     try {
                         Log.d("DrawingApp" , "Enviando:" + mUsername + " y " + param);
@@ -532,13 +493,13 @@ public class JoinActivity extends ActionBarActivity
                         e.printStackTrace();
                     }
                     try {
+                        int countdown = mDrawingInterface.getLobbyStatus();
+                        if(countdown > 0)
+                            setTimerToStart(countdown);
 
-                        if(!mDrawingInterface.getLobbyStatus())
+                        else {
                             // Keep waiting if this player is ready but not the others
                             sendEmptyMessage(CLIENT_WAITING);
-                        else {
-                            sendUiMessage(MESSAGE_POST_TOAST, "Attention: The game will start soon");
-                            sendEmptyMessage(CLIENT_STARTING);
                         }
                     } catch (BusException e) {
                         logException("DrawingInterface.getLobbyStatus()", e);
@@ -547,24 +508,6 @@ public class JoinActivity extends ActionBarActivity
                     break;
                 }
 
-                case CLIENT_STARTING: {
-                    try {
-                        // If we started already the timeout, we don't do it again.
-                        if(mCountDownStarted)
-                            break;
-                        mPlayerReady = false;
-                        mCountDownStarted = true;
-                        int countdown = mDrawingInterface.getCountdown();
-                        if(countdown>=0)
-                            setTimerToStart(countdown);
-                        else
-                            changeToDrawingFragment();
-                    } catch (BusException e) {
-                        logException("DrawingInterface.getCountdown()", e);
-                        sendUiMessage(MESSAGE_POST_TOAST, "Countdown can't be retreived");
-                    }
-                    break;
-                }
                 default:
                     break;
             }
@@ -573,6 +516,10 @@ public class JoinActivity extends ActionBarActivity
         /* Helper function to send a message to the UI thread. */
         private void sendUiMessage(int what, Object obj) {
             mHandler.sendMessage(mHandler.obtainMessage(what, obj));
+        }
+
+        private void sendUiMessage(int what) {
+            mHandler.sendEmptyMessage(what);
         }
     }
 
