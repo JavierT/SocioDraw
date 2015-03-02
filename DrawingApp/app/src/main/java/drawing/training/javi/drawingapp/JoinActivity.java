@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -56,8 +57,11 @@ public class JoinActivity extends ActionBarActivity
 
     private ProgressDialog mDialog;
     private JoinFragment mJoinFragment;
+    private DrawingFragment mDrawingFragment;
 
     protected ArrayList<String> mAvailableColors;
+    private boolean mPlayerReady = false;
+    private boolean mCountDownStarted = false;
 
 
     private Handler mHandler = new Handler() {
@@ -99,6 +103,7 @@ public class JoinActivity extends ActionBarActivity
             }
         }
     };
+
 
     private void getNewNameFromDialog() {
         final AlertDialog alert = new AlertDialog.Builder(this).create();
@@ -193,9 +198,8 @@ public class JoinActivity extends ActionBarActivity
      * @param ready Set the button ready behaviour
      */
     public void setReady(boolean ready) {
-
-        Message msg = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SET_READY,ready);
-        mBusHandler.sendMessage(msg);
+        mPlayerReady = ready;
+        mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_SET_READY);
     }
 
     /**
@@ -207,7 +211,40 @@ public class JoinActivity extends ActionBarActivity
         mBusHandler.sendMessage(msg);
     }
 
+    /**
+     * If the parameter is higher than 0, a timer it's set and when it finishes,
+     * the drawing fragment is shown
+     * Otherwise, the drawing fragment it's shown without timer
+     * @param countdown: time for the timer
+     */
+    private void setTimerToStart(int countdown) {
+        if(countdown>0) {
+            final ProgressDialog progress = ProgressDialog.show(this, "Starting the game",
+                    "in " + countdown + " seconds...", true);
+            new CountDownTimer(countdown*1000, 1000) {
 
+                public void onTick(long millisUntilFinished) {
+                    progress.setMessage("in "+ millisUntilFinished / 1000 + " seconds...");
+                }
+
+                public void onFinish() {
+                    progress.dismiss();
+                    changeToDrawingFragment();
+                }
+            }.start();
+        } else {
+            changeToDrawingFragment();
+        }
+    }
+
+    private void changeToDrawingFragment() {
+        mDrawingFragment = new DrawingFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.joinContainer, mDrawingFragment)
+                .addToBackStack(null)
+                .commit();
+    }
 
 
 
@@ -238,6 +275,7 @@ public class JoinActivity extends ActionBarActivity
         public static final int CLIENT_GETPLAYERS = 6;  /* NOT NEEDED IF SIGNAL DONT WORK, DONT SHOW PLAYERS TABLE IN EACH DEVICE */
         public static final int CLIENT_WAITING = 7;
         public static final int CLIENT_SET_COLOR = 8;
+        public static final int CLIENT_STARTING = 9;
 
         public ClientBusHandler (Looper looper) {
             super(looper);
@@ -456,7 +494,6 @@ public class JoinActivity extends ActionBarActivity
                         else
                         {
                             mAvailableColors = new ArrayList<>(Arrays.asList(colors));
-                            //sendUiMessage(MESSAGE_COLORS_UPDATE, ac);
                             mHandler.sendEmptyMessage(MESSAGE_COLORS_UPDATE);
                         }
                     } catch (BusException e) {
@@ -468,9 +505,8 @@ public class JoinActivity extends ActionBarActivity
                 }
 
                 case CLIENT_SET_READY: {
-                    boolean ready = (boolean) msg.obj;
                     try {
-                        if (!mDrawingInterface.setPlayerStatus(mUsername, ready)) {
+                        if (!mDrawingInterface.setPlayerStatus(mUsername, mPlayerReady)) {
                             sendUiMessage(MESSAGE_SET_NOT_READY, "Status denied");
                         }
                     } catch (BusException e) {
@@ -478,14 +514,18 @@ public class JoinActivity extends ActionBarActivity
                         sendUiMessage(MESSAGE_SET_NOT_READY, "Status can't be sent");
                         return;
                     }
-                    //if(ready) {
+                    if(mPlayerReady) {
                         // As the signals are not working, we go to waiting state.
-                        //sendEmptyMessage(CLIENT_WAITING);
-                    // }
+                        sendEmptyMessage(CLIENT_WAITING);
+                     }
+
                     break;
                 }
 
                 case CLIENT_WAITING: {
+                    // If our status changed we are not longer in this state.
+                    if(!mPlayerReady)
+                        break;
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
@@ -494,12 +534,34 @@ public class JoinActivity extends ActionBarActivity
                     try {
 
                         if(!mDrawingInterface.getLobbyStatus())
+                            // Keep waiting if this player is ready but not the others
                             sendEmptyMessage(CLIENT_WAITING);
-                        else
-                            sendUiMessage(MESSAGE_POST_TOAST, "WE ARE READY TO PLAAAY. BUT IT'S NO CODED YET");
+                        else {
+                            sendUiMessage(MESSAGE_POST_TOAST, "Attention: The game will start soon");
+                            sendEmptyMessage(CLIENT_STARTING);
+                        }
                     } catch (BusException e) {
                         logException("DrawingInterface.getLobbyStatus()", e);
                         sendUiMessage(MESSAGE_POST_TOAST, "Status can't be retreived");
+                    }
+                    break;
+                }
+
+                case CLIENT_STARTING: {
+                    try {
+                        // If we started already the timeout, we don't do it again.
+                        if(mCountDownStarted)
+                            break;
+                        mPlayerReady = false;
+                        mCountDownStarted = true;
+                        int countdown = mDrawingInterface.getCountdown();
+                        if(countdown>=0)
+                            setTimerToStart(countdown);
+                        else
+                            changeToDrawingFragment();
+                    } catch (BusException e) {
+                        logException("DrawingInterface.getCountdown()", e);
+                        sendUiMessage(MESSAGE_POST_TOAST, "Countdown can't be retreived");
                     }
                     break;
                 }
@@ -508,14 +570,12 @@ public class JoinActivity extends ActionBarActivity
             }
         }
 
-
-
-
         /* Helper function to send a message to the UI thread. */
         private void sendUiMessage(int what, Object obj) {
             mHandler.sendMessage(mHandler.obtainMessage(what, obj));
         }
     }
+
 
 
     private void logStatus(String msg, Status status) {

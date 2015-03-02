@@ -54,6 +54,9 @@ public interface DrawingInterface {
 
     @BusMethod
     boolean setDisconnect(String mUsername) throws BusException;
+
+    @BusMethod
+    int getCountdown() throws BusException;
 }
 
 

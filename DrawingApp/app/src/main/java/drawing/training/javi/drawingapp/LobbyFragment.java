@@ -2,15 +2,21 @@ package drawing.training.javi.drawingapp;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -75,7 +81,12 @@ public class LobbyFragment extends Fragment {
         }
     }
 
-
+    /**
+     * Sets that player with the new status (ready / not ready)
+     * @param name of the player
+     * @param status new status
+     * @return true if it was sucessful
+     */
     public boolean setReady(String name, boolean status) {
 
         int position = getPlayer(name);
@@ -92,6 +103,10 @@ public class LobbyFragment extends Fragment {
         }
     }
 
+    /**
+     * Remove the player with the given name from the list view
+     * @param name of the player
+     */
     public void removePlayer(String name) {
         int pos = getPlayer(name);
         mListViewArrayAdapter.remove(mPlayersConnected.get(pos));
@@ -99,6 +114,11 @@ public class LobbyFragment extends Fragment {
         mListViewArrayAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * If all the players are ready, the button is enabled
+     * Otherwise, is disabled and put in red.
+     * @param status
+     */
     public void updateStartGameButton(boolean status) {
         mReadyButton.setClickable(status);
         if(!status)
@@ -107,16 +127,31 @@ public class LobbyFragment extends Fragment {
             mReadyButton.setTextColor(Color.GREEN);
     }
 
+
+    /**
+     * Interface to communicate with the activity when the start
+     * button has been clicked
+     */
     public interface setStartGame {
         public void startGame();
     }
 
+    /**
+     * Adds a new player to the list view
+     * @param p: new player
+     */
     public void newPlayerToAdd(Player p) {
         mPlayersConnected.add(p);
         mListViewArrayAdapter.add(p);
         mListViewArrayAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Update the color chosed by the player given in name
+     * @param name: of the player
+     * @param color selected
+     * @return if the process was successful
+     */
     public boolean updatePlayerColor(String name, String color) {
         int position = getPlayer(name);
         if(position > mListViewArrayAdapter.getCount())
@@ -125,16 +160,12 @@ public class LobbyFragment extends Fragment {
             return false;
         }
         else {
-            //Player p = mListViewArrayAdapter.getItem(position);
-            //if(p!= null) {
             mPlayersConnected.get(position).color = color;
-                //p.color = color;
             mListViewArrayAdapter.notifyDataSetChanged();
             return true;
-            //}
         }
-        //return false;
     }
+
 
     private class PlayerArrayAdapter extends ArrayAdapter<Player> {
         private final Context context;
@@ -190,5 +221,6 @@ public class LobbyFragment extends Fragment {
             return position;
         }
     }
+
 
 }

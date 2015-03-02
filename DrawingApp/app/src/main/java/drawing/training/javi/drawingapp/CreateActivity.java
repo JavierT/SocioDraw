@@ -1,7 +1,9 @@
 package drawing.training.javi.drawingapp;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -10,7 +12,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.alljoyn.bus.BusAttachment;
@@ -48,6 +49,8 @@ public class CreateActivity extends ActionBarActivity
     public static final int SERVICE_DISCONNECT = 2;
 
     private Handler mHandler = new Handler() {
+
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -71,8 +74,10 @@ public class CreateActivity extends ActionBarActivity
                 case MESSAGE_REMOVE_PLAYER:
                     Toast.makeText(getApplicationContext(), "The player " + msg.obj + " left the game", Toast.LENGTH_LONG).show();
                     mLobbyFragment.removePlayer((String) msg.obj);
+                    break;
                 case MESSAGE_SET_GAME_READY:
                     mLobbyFragment.updateStartGameButton(mAllPlayersReady);
+                    break;
                 default:
                     break;
             }
@@ -95,8 +100,12 @@ public class CreateActivity extends ActionBarActivity
     private HashMap<String,Boolean> mColorsAvailable;
     private String mJoinerName;
     private int mSessionId;
-    private boolean mAllPlayersReady;
-    //private int mPlayersConnected;
+    private boolean mAllPlayersReady = false;
+    private ProgressDialog myProgressDialog;
+    private ScreenFragment mScreenFragment;
+    private CountDownTimer mTimer;
+    private int mSecondsToStart;
+    private boolean mStartingGame = false;
 
 
     @Override
@@ -133,9 +142,7 @@ public class CreateActivity extends ActionBarActivity
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.darkblue))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.orange))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
-        mColorsAvailable.put(String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.green))),false);
-
-
+        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.green))),false);
 
     }
 
@@ -170,9 +177,44 @@ public class CreateActivity extends ActionBarActivity
         mBusHandler.sendEmptyMessage(SERVICE_DISCONNECT);
     }
 
+    /**
+     * When the startButton is clicked, then a timer is set up to synchronize
+     * with the players and the game changes to the drawing fragment
+     */
     public void startGame() {
+        mStartingGame = true;
+        myProgressDialog = new ProgressDialog(this);
+        myProgressDialog.setTitle("Starting the game");
+        myProgressDialog.setMessage("The game will start in 5 seconds...");
+        myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        myProgressDialog.show();
+        mSecondsToStart = Constants.countdownTimer;
+        mTimer = new CountDownTimer(Constants.countdownTimer*1000, 1000) {
 
-        mDrawingService.sendUiMessage(MESSAGE_POST_TOAST,"STAAART THE GAMEEEE");
+            public void onTick(long millisUntilFinished) {
+                mSecondsToStart--;
+                myProgressDialog.setMessage("The game will start in "+ millisUntilFinished / 1000 + " seconds...");
+            }
+
+            public void onFinish() {
+                mSecondsToStart = 0;
+                myProgressDialog.dismiss();
+                openScreenFragment();
+            }
+        }.start();
+    }
+
+    /**
+     * The Lobby fragment changes to the drawing fragment
+     */
+    public void openScreenFragment() {
+
+      mScreenFragment = new ScreenFragment();
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.createContainer, mScreenFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     // The class that is our Alljoyn service. It implements the DrawingInterface
@@ -197,7 +239,7 @@ public class CreateActivity extends ActionBarActivity
                 p.name = name;
                 p.ready = false;
                 p.score = 0;
-                p.color = String.format("#%08X", (0xFFFFFFFF & getResources().getColor(R.color.black)));
+                p.color = String.format("#%08X", (getResources().getColor(R.color.black)));
                 mCurrentPlayers.put(name, p);
                 sendUiMessage(MESSAGE_SET_NEW_PLAYER, mCurrentPlayers.get(name));
 
@@ -223,6 +265,7 @@ public class CreateActivity extends ActionBarActivity
         //
 
         /**
+         * METHOD NOT CALLED DUE TO THE SIGNALS FAILURE
          * Method to get all the players connected to the server.
          * @return An array with all the players data currently connected
          * @throws BusException
@@ -266,7 +309,7 @@ public class CreateActivity extends ActionBarActivity
         }
 
         /**
-         * Returns the status of the lobby. It can be WAITING = 0
+         * Sets the new status of the player and returns true if it was changed successfully
          *
          * @return Returns false if the players is not found in the Current Players List.
          * @throws BusException
@@ -284,7 +327,10 @@ public class CreateActivity extends ActionBarActivity
         }
 
         /**
-         * Returns the status of the lobby. It can be WAITING = 0
+         * Sets the color of the player. Updates the table of colors with colors used
+         * As well, puts the previous color of that player as available
+         * If the color chosen is already taken, the list of available colors is returned
+         * with a first item that indicates that the color is not available.
          *
          * @return Returns a list of the available colors.
          * @throws BusException
@@ -324,33 +370,44 @@ public class CreateActivity extends ActionBarActivity
                     colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
             }
             String[] colorTable = new String[colorsAvailable.size()];
-            //for(int i=0; i<colorsAvailable.size(); i++)
-            //        colorTable[i]=colorsAvailable.get(i);
             colorTable = colorsAvailable.toArray(colorTable);
             Log.d("DrawingApp Server","color table values: " + colorTable.length);
             return colorTable;
         }
 
-
-        public boolean setDisconnect(String name) {
+        /**
+         * Disconnect a player from the service
+         * @param name of the player
+         * @return true if the disconnection was successful
+         */
+        public boolean setDisconnect(String name) throws BusException {
             if(!mCurrentPlayers.containsKey(name))
                 return false;
             String color = mCurrentPlayers.get(name).color;
             if(mColorsAvailable.containsKey(color))
                 mColorsAvailable.put(color,false);
             mCurrentPlayers.remove(name);
-            sendUiMessage(MESSAGE_REMOVE_PLAYER,name);
+            sendUiMessage(MESSAGE_REMOVE_PLAYER, name);
             return true;
         }
 
         /**
-         * Returns the status of the lobby. It can be WAITING = 0
-         *
-         * @return Return if all players are ready to play
+         * Returns the status of the lobby. False if we are still waiting for
+         * players.
+         * @return Return true if the game enters in the countdown state
          * @throws BusException
          */
         public boolean getLobbyStatus() throws BusException {
-            return mAllPlayersReady;
+            return mStartingGame;
+        }
+
+        /**
+         * Return the countdown time that is remaining.
+         * @return the time in seconds.
+         * @throws BusException
+         */
+        public int getCountdown() throws BusException {
+            return mSecondsToStart;
         }
 
         /**
@@ -377,21 +434,11 @@ public class CreateActivity extends ActionBarActivity
         return ready;
     }
 
-//    public class SignalService implements SignalInterface, BusObject {
-//
-//
-//    }
 
     // This class will handle all Alljoyn calls
     class ServiceBusHandler extends Handler {
-        //private static final String SERVICE_NAME = "drawing.training.javi.drawing";
-        //private static final short CONTACT_PORT = 42;
 
         private BusAttachment mBus;
-
-        // Messages sent to the BusHandler from the UI
-        //public static final int CONNECT = 1;
-        //public static final int DISCONNECT = 2;
 
         public ServiceBusHandler(Looper looper) {
             super(looper);
