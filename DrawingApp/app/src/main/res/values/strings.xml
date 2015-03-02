@@ -29,8 +29,4 @@
     <string name="lobby_Start">Start Game</string>
     <string name="join">You have joined the game</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-
 </resources>

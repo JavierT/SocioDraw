@@ -21,7 +21,6 @@ import org.alljoyn.bus.BusObject;
 import org.alljoyn.bus.Mutable;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.SessionPortListener;
-import org.alljoyn.bus.SignalEmitter;
 import org.alljoyn.bus.Status;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ public class CreateActivity extends ActionBarActivity
         System.loadLibrary("alljoyn_java");
     }
 
-    private String mUsername;
     private static final String TAG = "DrawingService";
 
     private static final int MESSAGE_SET_NEW_PLAYER= 1;
@@ -92,8 +90,6 @@ public class CreateActivity extends ActionBarActivity
 
     // Handler used to make calls to Alljoyn methods
     private Handler mBusHandler;
-    private SignalEmitter mEmitter;
-    //private DrawingInterface mInterface;
 
     protected HashMap<String, Player> mCurrentPlayers;
     private HashMap<String,Boolean> mColorsAvailable;
@@ -103,6 +99,7 @@ public class CreateActivity extends ActionBarActivity
     private ProgressDialog myProgressDialog;
     private ScreenFragment mScreenFragment;
     private int mSecondsToStart = -1;
+    private String mUsername;
 
 
     @Override
@@ -224,7 +221,6 @@ public class CreateActivity extends ActionBarActivity
          * name is already registered.
          */
         public boolean newPlayerConnected(String name) {
-            Message msg;
             if(mCurrentPlayers.containsKey(name))
                 return false;
             else
@@ -241,10 +237,6 @@ public class CreateActivity extends ActionBarActivity
                 return true;
             }
         }
-
-        //
-
-
 
         /**
          * Sets the new status of the player and returns true if it was changed successfully
@@ -478,11 +470,6 @@ public class CreateActivity extends ActionBarActivity
                         public void sessionJoined(short sessionPort, int id, String joiner) {
                             mSessionId = id;
                             mJoinerName = joiner;
-                            // TODO This emitter does not work. It is registered but the client doesnt' find the signal
-                            //if(mEmitter == null) {
-                                //mEmitter = new SignalEmitter(mDrawingService, mSessionId, SignalEmitter.GlobalBroadcast.On);
-                                //mInterface = mEmitter.getInterface(DrawingInterface.class);
-                            //}
                         }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",
