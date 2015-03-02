@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -26,7 +27,6 @@ import org.alljoyn.bus.ProxyBusObject;
 import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
-import org.alljoyn.bus.annotation.BusSignalHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,8 @@ import java.util.Arrays;
 
 
 public class JoinActivity extends ActionBarActivity
-    implements JoinFragment.setPlayerReady, JoinFragment.setPlayerColor {
+    implements JoinFragment.setPlayerReady, JoinFragment.setPlayerColor,
+                DrawingView.sendPlayerPaint {
     /* Load the native alljoyn_java library */
     static {
         System.loadLibrary("alljoyn_java");
@@ -60,6 +61,7 @@ public class JoinActivity extends ActionBarActivity
 
     protected ArrayList<String> mAvailableColors;
     private boolean mPlayerReady = false;
+    private int mColorSelected;
 
 
     private Handler mHandler = new Handler() {
@@ -99,6 +101,7 @@ public class JoinActivity extends ActionBarActivity
             }
         }
     };
+
 
 
     private void getNewNameFromDialog() {
@@ -234,7 +237,12 @@ public class JoinActivity extends ActionBarActivity
     }
 
     private void changeToDrawingFragment() {
+        mColorSelected = mJoinFragment.getColorSelected();
         mDrawingFragment = new DrawingFragment();
+
+        Bundle args = new Bundle();
+        args.putInt(Constants.ARGS_PAINT, mColorSelected);
+        mDrawingFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.joinContainer, mDrawingFragment)
@@ -242,6 +250,20 @@ public class JoinActivity extends ActionBarActivity
                 .commit();
     }
 
+    @Override
+    public void sendPaint(PointF from, PointF to) {
+        Message msg = mHandler.obtainMessage(MESSAGE_POST_TOAST,"Received point: " + to.toString());
+        mHandler.sendMessage(msg);
+        //DrawingPath paintPath = new DrawingPath(from,to, mColorSelected);
+        DrawingPath paintPath = new DrawingPath();
+        paintPath.fromX = from.x;
+        paintPath.fromY = from.y;
+        paintPath.toX = to.x;
+        paintPath.toY = to.y;
+        paintPath.color = mColorSelected;
+        Message msg2 = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SEND_POINT, paintPath);
+        mBusHandler.sendMessage(msg2);
+    }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -266,6 +288,7 @@ public class JoinActivity extends ActionBarActivity
         public static final int CLIENT_SET_READY = 5;
         public static final int CLIENT_WAITING = 7;
         public static final int CLIENT_SET_COLOR = 8;
+        public static final int CLIENT_SEND_POINT = 9;
 
         public ClientBusHandler (Looper looper) {
             super(looper);
@@ -501,6 +524,18 @@ public class JoinActivity extends ActionBarActivity
                             // Keep waiting if this player is ready but not the others
                             sendEmptyMessage(CLIENT_WAITING);
                         }
+                    } catch (BusException e) {
+                        logException("DrawingInterface.getLobbyStatus()", e);
+                        sendUiMessage(MESSAGE_POST_TOAST, "Status can't be retreived");
+                    }
+                    break;
+                }
+
+                case CLIENT_SEND_POINT: {
+                    try {
+                        DrawingPath param = (DrawingPath)msg.obj;
+                        if(!mDrawingInterface.sendPoint(param))
+                            sendUiMessage(MESSAGE_POST_TOAST, "Point can't be sent");
                     } catch (BusException e) {
                         logException("DrawingInterface.getLobbyStatus()", e);
                         sendUiMessage(MESSAGE_POST_TOAST, "Status can't be retreived");

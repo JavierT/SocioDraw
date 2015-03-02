@@ -125,13 +125,6 @@ public class MainActivity extends ActionBarActivity
                 .addToBackStack(null)
                 .commit();
 
-        // TESTING PURPOSES!!! CHANGE TO ON JOIN ACTIVITY
-//        getSupportFragmentManager().beginTransaction()
-//                .replace(R.id.container, new LobbyFragment())
-//                .addToBackStack(null)
-//                .commit();
-
-
     }
 }
 

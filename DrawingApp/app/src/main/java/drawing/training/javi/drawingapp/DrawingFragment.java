@@ -1,6 +1,5 @@
 package drawing.training.javi.drawingapp;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,7 +10,6 @@ import android.view.ViewGroup;
 public class DrawingFragment extends Fragment {
 
     private DrawingView drawView;
-    private Color currPaint;
 
     public DrawingFragment() {
         setHasOptionsMenu(true);
@@ -21,14 +19,12 @@ public class DrawingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_drawing, container, false);
+        Bundle args = getArguments();
+        int paint = args.getInt(Constants.ARGS_PAINT, 0xFF660000);
 
-//        //drawView = new DrawingView(container.getContext(),R.id.drawing);
         drawView = (DrawingView)rootView.findViewById(R.id.drawing);
-
-
-
-
-
+        drawView.setCallback(getActivity());
+        drawView.setPaint(paint);
         return rootView;
     }
 

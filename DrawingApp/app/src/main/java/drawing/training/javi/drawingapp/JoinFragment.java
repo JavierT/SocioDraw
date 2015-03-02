@@ -169,6 +169,11 @@ public class JoinFragment extends Fragment {
         public void setColor(String color);
     }
 
+    public int getColorSelected() {
+        String paint = mCurrPaint.getTag().toString();
+        return Color.parseColor(paint);
+    }
+
 
 
 

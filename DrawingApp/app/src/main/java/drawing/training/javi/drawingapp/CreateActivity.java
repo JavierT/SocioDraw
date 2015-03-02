@@ -42,6 +42,7 @@ public class CreateActivity extends ActionBarActivity
     private static final int MESSAGE_COLOR_SELECTED = 4;
     private static final int MESSAGE_REMOVE_PLAYER = 5;
     private static final int MESSAGE_SET_GAME_READY = 6;
+    private static final int MESSAGE_PAINT_POINTS = 7;
 
     public static final int SERVICE_CONNECT = 1;
     public static final int SERVICE_DISCONNECT = 2;
@@ -76,14 +77,18 @@ public class CreateActivity extends ActionBarActivity
                 case MESSAGE_SET_GAME_READY:
                     mLobbyFragment.updateStartGameButton(mAllPlayersReady);
                     break;
+                case MESSAGE_PAINT_POINTS:
+                    mScreenFragment.paintPoints((DrawingPath) msg.obj);
+                    break;
                 default:
                     break;
             }
         }
     };
 
+    // Fragments associated to this activity
     private LobbyFragment mLobbyFragment;
-
+    private ScreenFragment mScreenFragment;
 
     // The Alljoyn object that is our service
     private DrawingService mDrawingService;
@@ -97,7 +102,7 @@ public class CreateActivity extends ActionBarActivity
     private int mSessionId;
     private boolean mAllPlayersReady = false;
     private ProgressDialog myProgressDialog;
-    private ScreenFragment mScreenFragment;
+
     private int mSecondsToStart = -1;
     private String mUsername;
 
@@ -201,7 +206,7 @@ public class CreateActivity extends ActionBarActivity
      */
     public void openScreenFragment() {
 
-      mScreenFragment = new ScreenFragment();
+        mScreenFragment = new ScreenFragment();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.createContainer, mScreenFragment)
@@ -332,9 +337,28 @@ public class CreateActivity extends ActionBarActivity
             return mSecondsToStart;
         }
 
+        /**
+         * Send to the UI the points to paint.
+         * @param points Structure with the starting point and the end point
+         *               as well the color chosen by the player
+         * @return true if received
+         * @throws BusException
+         */
+        public boolean sendPoint(DrawingPath points) throws BusException {
+            //sendUiMessage(MESSAGE_POST_TOAST,"RECEIVED POINTS  "+ points.fromX+", " + points.fromY );
+            if(points==null)
+                return false;
+            sendUiMessage(MESSAGE_PAINT_POINTS, points);
+            return true;
+        }
+
         // Helper function to send a message to the UI thread
         private void sendUiMessage(int what, Object obj) {
             mHandler.sendMessage(mHandler.obtainMessage(what,obj));
+        }
+
+        private void sendUiMessage(int what) {
+            mHandler.sendEmptyMessage(what);
         }
 
     }

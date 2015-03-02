@@ -3,15 +3,19 @@ package drawing.training.javi.drawingapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
+import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
 /**
- * Created by javi on 22/01/15.
+ * Drawing App created by Javier Tresaco on 22/01/15.
+ * ${PACKAGE_NAME}
+ * Source code on:  https://github.com/JavierT/SocioDraw
  */
 public class DrawingView extends View{
 
@@ -26,14 +30,20 @@ public class DrawingView extends View{
     //canvas bitmap
     private Bitmap canvasBitmap;
 
+    private PointF lastPoint;
+
+    private sendPlayerPaint mCallbackPaint;
+
 
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        paintColor = attrs.getAttributeIntValue(0,paintColor);
         setupDrawing();
     }
 
     private void setupDrawing() {
         //Get drawing area setup for interaction
+        lastPoint = new PointF(0.0f,0.0f);
         drawPath = new Path();
         drawPaint = new Paint();
 
@@ -45,7 +55,11 @@ public class DrawingView extends View{
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
         canvasPaint = new Paint(Paint.DITHER_FLAG);
+    }
 
+    public void setPaint(int paint) {
+        this.paintColor = paint;
+        drawPaint.setColor(paint);
     }
 
     @Override
@@ -66,7 +80,7 @@ public class DrawingView extends View{
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
         //detect user touch
         float touchX = event.getX();
         float touchY = event.getY();
@@ -74,9 +88,13 @@ public class DrawingView extends View{
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 drawPath.moveTo(touchX,touchY);
+                lastPoint.set(touchX, touchY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX,touchY);
+                PointF p = new PointF(touchX, touchY);
+                mCallbackPaint.sendPaint(lastPoint, p);
+                lastPoint.set(touchX, touchY);
                 break;
             case MotionEvent.ACTION_UP:
                 drawCanvas.drawPath(drawPath,drawPaint);
@@ -90,11 +108,19 @@ public class DrawingView extends View{
         return true;
     }
 
-    public void setColor(String newColor){
-        //set color
-        invalidate();
-
-        paintColor = Color.parseColor(newColor);
-        drawPaint.setColor(paintColor);
+    public void setCallback(FragmentActivity activity) {
+        try {
+            mCallbackPaint = (sendPlayerPaint) activity ;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement sendPlayerPaint");
+        }
     }
+
+    public interface sendPlayerPaint {
+        public void sendPaint(PointF from, PointF to);
+    }
+
+
+
 }

@@ -7,5 +7,6 @@ package drawing.training.javi.drawingapp;
  */
 public abstract class Constants {
 
-    public static final int countdownTimer = 10;
+    public static final int countdownTimer = 5;
+    public static final String ARGS_PAINT = "PaintSelected";
 }

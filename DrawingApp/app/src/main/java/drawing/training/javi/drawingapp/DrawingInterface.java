@@ -3,7 +3,6 @@ package drawing.training.javi.drawingapp;
 import org.alljoyn.bus.BusException;
 import org.alljoyn.bus.annotation.BusInterface;
 import org.alljoyn.bus.annotation.BusMethod;
-import org.alljoyn.bus.annotation.BusSignal;
 
 /**
  * Drawing App created by Javier Tresaco on 3/02/15.
@@ -48,6 +47,8 @@ public interface DrawingInterface {
     @BusMethod
     boolean setDisconnect(String mUsername) throws BusException;
 
+    @BusMethod(signature = "r", replySignature = "b")
+    boolean sendPoint(DrawingPath points) throws BusException;
 }
 
 
