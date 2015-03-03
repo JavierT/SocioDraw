@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -50,6 +51,8 @@ public class ScreenView extends View {
 
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+        Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
+        Log.d("DrawingApp","Canvas size: " + w + "," + h);
     }
 
     @Override
@@ -68,4 +71,25 @@ public class ScreenView extends View {
         drawPath.reset();
         invalidate(); //invalidate view to repaint
     }
+
+    public int getCanvasWidth() {
+        return canvasBitmap.getWidth();
+    }
+
+    public int getCanvasHeight() {
+        return canvasBitmap.getHeight();
+    }
+
+//    public void setCanvasWidth(int h) {
+//        canvasBitmap.setWidth(h);
+//    }
+//
+//    public void setCanvasHeight(int w) {
+//        canvasBitmap.setWidth(w);
+//    }
+
+//    public void reconfigureCanvas(int h, int w)
+//    {
+//        canvasBitmap.reconfigure(w,h, Bitmap.Config.ARGB_8888);
+//    }
 }

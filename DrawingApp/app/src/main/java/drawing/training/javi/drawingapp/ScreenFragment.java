@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-
 public class ScreenFragment extends Fragment {
     private ScreenView screenView;
 
@@ -24,6 +23,11 @@ public class ScreenFragment extends Fragment {
         screenView = (ScreenView)rootView.findViewById(R.id.screen);
 
 
+
+//        Toast.makeText(this.getActivity(), "Size: "+ screenView.getCanvasHeight() + ", "
+//                        + screenView.getCanvasWidth(), Toast.LENGTH_LONG).show();
+//
+//        screenView.reconfigureCanvas(800,1024);
         return rootView;
     }
 
