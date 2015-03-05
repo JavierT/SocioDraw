@@ -9,4 +9,8 @@ public abstract class Constants {
 
     public static final int countdownTimer = 5;
     public static final String ARGS_PAINT = "PaintSelected";
+    public static final int HEIGHT = 3000;
+    public static final int WIDTH = 3000;
+    public static final String ARGS_SCREEN_WIDTH = "ScreenWidht";
+    public static final String ARGS_SCREEN_HEIGHT = "ScreenHeight";
 }

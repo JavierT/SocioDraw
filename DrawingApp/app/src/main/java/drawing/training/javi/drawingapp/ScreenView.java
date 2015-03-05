@@ -3,8 +3,10 @@ package drawing.training.javi.drawingapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +17,8 @@ import android.view.View;
  * Source code on:  https://github.com/JavierT/SocioDraw
  */
 public class ScreenView extends View {
-
+    private float totalWidth = (float) Constants.WIDTH;
+    private float totalHeight = (float) Constants.HEIGHT;
     //drawing path
     private Path drawPath;
     //drawing and canvas paint
@@ -26,6 +29,8 @@ public class ScreenView extends View {
     private Bitmap canvasBitmap;
     //canvas
     private Canvas drawCanvas;
+    private Rect clipBounds;
+    private Matrix mat;
 
 
     public ScreenView(Context context, AttributeSet attrs) {
@@ -41,6 +46,7 @@ public class ScreenView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
         canvasPaint = new Paint(Paint.DITHER_FLAG);
+
     }
 
 
@@ -49,8 +55,13 @@ public class ScreenView extends View {
         //view given size
         super.onSizeChanged(w,h,oldw,oldh);
 
-        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
+        clipBounds = drawCanvas.getClipBounds();
+        mat=new Matrix();
+        mat.setTranslate( clipBounds.left, clipBounds.top );
+        mat.setScale(w/totalWidth ,h/totalHeight);
+
         Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
         Log.d("DrawingApp","Canvas size: " + w + "," + h);
     }
@@ -58,7 +69,7 @@ public class ScreenView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         //draw view
-        canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+        canvas.drawBitmap(canvasBitmap, mat, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
 
     }

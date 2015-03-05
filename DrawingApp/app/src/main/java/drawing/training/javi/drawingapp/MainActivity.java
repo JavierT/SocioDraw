@@ -115,18 +115,13 @@ public class MainActivity extends ActionBarActivity
     /////////////////////////////////////////////////////////////////////////////////////
     public void openCreateOptionsFragment() {
 
-//        createFragment = new CreateOptionsFragment();
-//        Bundle args = new Bundle();
-//        args.putString(getString(R.string.username), mUsername);
-//        createFragment.setArguments(args);
-
-//        getSupportFragmentManager().beginTransaction()
-//                .replace(R.id.container, createFragment)
-//                .addToBackStack(null)
-//                .commit();
+        createFragment = new CreateOptionsFragment();
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.username), mUsername);
+        createFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new DrawingFragment())
+                .replace(R.id.container, createFragment)
                 .addToBackStack(null)
                 .commit();
 

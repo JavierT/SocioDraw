@@ -105,7 +105,7 @@ public class JoinActivity extends ActionBarActivity
 
     private void getNewNameFromDialog() {
         final AlertDialog alert = new AlertDialog.Builder(this).create();
-        alert.setTitle("Title");
+        alert.setTitle("Select a new name");
 
         // Set up the input
         final EditText input = new EditText(this);
@@ -241,6 +241,8 @@ public class JoinActivity extends ActionBarActivity
 
         Bundle args = new Bundle();
         args.putInt(Constants.ARGS_PAINT, mColorSelected);
+        args.putInt(Constants.ARGS_SCREEN_WIDTH, Constants.WIDTH);
+        args.putInt(Constants.ARGS_SCREEN_HEIGHT, Constants.HEIGHT);
         mDrawingFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
@@ -504,6 +506,22 @@ public class JoinActivity extends ActionBarActivity
 
                     break;
                 }
+
+//                case CLIENT_GET_SCREEN_SIZE: {
+//                    try {
+//                        ScreenSize size = mDrawingInterface.getScreenSize();
+//                        if (size.width == -1) {
+//                            sendUiMessage(MESSAGE_SET_NOT_READY, "Size denied");
+//                            mBusHandler.sendEmptyMessage(CLIENT_DISCONNECT);
+//                        }
+//                    } catch (BusException e) {
+//                        logException("DrawingInterface.getScreenSize()", e);
+//                        sendUiMessage(MESSAGE_POST_TOAST, "Size can't be retreived.");
+//                        mBusHandler.sendEmptyMessage(CLIENT_DISCONNECT);
+//                        return;
+//                    }
+//                    break;
+//                }
 
                 case CLIENT_WAITING: {
                     // If our status changed we are not longer in this state.

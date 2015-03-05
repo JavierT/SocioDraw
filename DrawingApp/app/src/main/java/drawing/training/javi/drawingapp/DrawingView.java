@@ -8,8 +8,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -32,11 +32,14 @@ public class DrawingView extends View{
     //canvas bitmap
     private Bitmap canvasBitmap;
 
-    private float mPosX;
-    private float mPosY;
+    private float mDriftingX;
+    private float mDriftingY;
 
-    private float mLastTouchX;
-    private float mLastTouchY;
+    private float mLastPaintTouchX;
+    private float mLastPaintTouchY;
+
+    private float mLastMovementTouchX;
+    private float mLastMovementTouchY;
 
     private float mMiddleScaleTouchX;
     private float mMiddleScaleTouchY;
@@ -55,7 +58,9 @@ public class DrawingView extends View{
 
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        paintColor = attrs.getAttributeIntValue(0,paintColor);
+//        paintColor = attrs.getAttributeIntValue(0,paintColor);
+//        sizeWidth = attrs.getAttributeIntValue(1,Constants.WIDTH);
+//        sizeHeight = attrs.getAttributeIntValue(2,Constants.HEIGHT);
         setupDrawing();
         // Create our ScaleGestureDetector
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -73,6 +78,10 @@ public class DrawingView extends View{
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
+        canvasBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        drawCanvas = new Canvas(canvasBitmap);
+        clipBounds = drawCanvas.getClipBounds();
+
 
     }
 
@@ -81,19 +90,27 @@ public class DrawingView extends View{
         drawPaint.setColor(paint);
     }
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        //view given size
-        super.onSizeChanged(w,h,oldw,oldh);
-
-        canvasBitmap = Bitmap.createBitmap(1950, 2419, Bitmap.Config.ARGB_8888);
+    public void setSize(int w, int h) {
+        canvasBitmap.recycle();
+        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         drawCanvas = new Canvas(canvasBitmap);
         drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();
-        Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
-                + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
-        Log.d("DrawingApp. OnSize", "Drawingspace size: H:" + this.getWidth() + " H: " + this.getHeight()) ;
     }
+
+//    @Override
+//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+//        //view given size
+//        super.onSizeChanged(w,h,oldw,oldh);
+//
+//        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.ARGB_8888);
+//        drawCanvas = new Canvas(canvasBitmap);
+//        drawCanvas.drawColor(Color.WHITE);
+//        clipBounds = drawCanvas.getClipBounds();
+//        //Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
+//        //        + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
+//        //Log.d("DrawingApp. OnSize", "Drawingspace size: H:" + this.getWidth() + " H: " + this.getHeight()) ;
+//    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -101,7 +118,7 @@ public class DrawingView extends View{
         super.onDraw(canvas);
         canvas.save();
         drawPaint.setStrokeWidth(12/mScaleFactor);
-        canvas.translate(mPosX, mPosY);
+        canvas.translate(mDriftingX, mDriftingY);
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
         canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
         canvas.drawPath(drawPath, drawPaint);
@@ -132,8 +149,8 @@ public class DrawingView extends View{
         final int action = event.getAction();
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
-                mLastTouchX = touchX;
-                mLastTouchY = touchY;
+                mLastMovementTouchX = touchX;
+                mLastMovementTouchY = touchY;
                 mActivePointerId = event.getPointerId(0);
                 break;
             }
@@ -145,16 +162,16 @@ public class DrawingView extends View{
 
                 // Only move if the ScaleGestureDetector isn't processing a gesture.
                 if (!mScaleDetector.isInProgress() && event.getPointerCount()<=1) {
-                    final float dx = touchX - mLastTouchX;
-                    final float dy = touchY - mLastTouchY;
-                    mPosX += dx;
-                    mPosY += dy;
-                    Log.d("DrawingApp. OnSize", "Drifting- current touch: X:" + touchX + " Y: " + touchY) ;
-                    Log.d("DrawingApp. OnSize", "Drifting- last touch: X:" + mLastTouchX + " Y: " + mLastTouchY) ;
-                    Log.d("DrawingApp. OnSize", "Drifting: X:" + mPosX + " Y: " + mPosY) ;
-                    Log.d("DrawingApp. OnSize", "-------------------------------------------------") ;
-                    mLastTouchX = touchX;
-                    mLastTouchY = touchY;
+                    final float dx = touchX - mLastMovementTouchX;
+                    final float dy = touchY - mLastMovementTouchY;
+                    mDriftingX += dx;
+                    mDriftingY += dy;
+//                    Log.d("DrawingApp. OnSize", "Drifting- current touch: X:" + touchX + " Y: " + touchY) ;
+//                    Log.d("DrawingApp. OnSize", "Drifting- last touch: X:" + mLastMovementTouchX + " Y: " + mLastMovementTouchY) ;
+//                    Log.d("DrawingApp. OnSize", "Drifting: X:" + mDriftingX + " Y: " + mDriftingY) ;
+//                    Log.d("DrawingApp. OnSize", "-------------------------------------------------") ;
+                    mLastMovementTouchX = touchX;
+                    mLastMovementTouchY = touchY;
                 }
 
                 break;
@@ -176,8 +193,8 @@ public class DrawingView extends View{
                     // This was our active pointer going up. Choose a new
                     // active pointer and adjust accordingly.
                     final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                    mLastTouchX = event.getX(newPointerIndex);
-                    mLastTouchY = event.getY(newPointerIndex);
+                    mLastMovementTouchX = event.getX(newPointerIndex);
+                    mLastMovementTouchY = event.getY(newPointerIndex);
                     mActivePointerId = event.getPointerId(newPointerIndex);
                 }
                 break;
@@ -190,11 +207,11 @@ public class DrawingView extends View{
         //Log.d("DrawingApp. OnSize", "Touch: X:" + event.getX() + " Y: " + event.getY() + "ScaleFactor= " + mScaleFactor) ;
         //Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
         //        + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
-        //Log.d("DrawingApp. OnSize", "Drifting: X:" + mPosX + " Y: " + mPosY) ;
+        //Log.d("DrawingApp. OnSize", "Drifting: X:" + mDriftingX + " Y: " + mDriftingY) ;
 
 
-//        float touchX = (event.getX() + clipBounds.left - mPosX) / mScaleFactor;
-//        float touchY = (event.getY() + clipBounds.top - mPosY) / mScaleFactor;
+//        float touchX = (event.getX() + clipBounds.left - mDriftingX) / mScaleFactor;
+//        float touchY = (event.getY() + clipBounds.top - mDriftingY) / mScaleFactor;
         float touchX = (event.getX() / mScaleFactor) + clipBounds.left;
         float touchY = (event.getY()/ mScaleFactor) + clipBounds.top;
 //        if(touchX <0.0f || touchX > (clipBounds.right-clipBounds.left))
@@ -209,14 +226,14 @@ public class DrawingView extends View{
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 drawPath.moveTo(touchX, touchY);
-                mLastTouchX = touchX;
-                mLastTouchY = touchY;
+                mLastPaintTouchX = touchX;
+                mLastPaintTouchY = touchY;
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX, touchY);
-//                    mCallbackPaint.sendPaint(mLastTouchX, mLastTouchY, mPosX, mPosY);
-                mLastTouchX = touchX;
-                mLastTouchY = touchY;
+                mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY);
+                mLastPaintTouchX = touchX;
+                mLastPaintTouchY = touchY;
                 break;
             case MotionEvent.ACTION_UP:
                 drawCanvas.drawPath(drawPath, drawPaint);
@@ -229,14 +246,14 @@ public class DrawingView extends View{
     }
 
 
-//    public void setCallback(FragmentActivity activity) {
-//        try {
-//            mCallbackPaint = (sendPlayerPaint) activity ;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " must implement sendPlayerPaint");
-//        }
-//    }
+    public void setCallback(FragmentActivity activity) {
+        try {
+            mCallbackPaint = (sendPlayerPaint) activity ;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement sendPlayerPaint");
+        }
+    }
 
     public interface sendPlayerPaint {
         public void sendPaint(float fromX, float fromY, float toX, float toY);
@@ -245,7 +262,7 @@ public class DrawingView extends View{
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            Log.d("DrawingApp. OnSize", "OnScale gesture happening. "+"Final touch: X:" + mLastTouchX + " Y: " + mLastTouchY);
+            //Log.d("DrawingApp. OnSize", "OnScale gesture happening. "+"Final touch: X:" + mLastPaintTouchX + " Y: " + mLastPaintTouchY);
             mScaleFactor *= detector.getScaleFactor();
 
             // Don't let the object get too small or too large.
