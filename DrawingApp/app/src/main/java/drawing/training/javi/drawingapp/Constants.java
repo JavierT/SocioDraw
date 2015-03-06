@@ -14,6 +14,8 @@ public abstract class Constants {
     public static final int WIDTH = 2048;
     public static final String ARGS_SCREEN_WIDTH = "ScreenWidht";
     public static final String ARGS_SCREEN_HEIGHT = "ScreenHeight";
-    public static final int STROKE_SIZE = 15;
-    public static final int STROKE_SIZE_ERASE = 35;
+    public static final int STROKE_SIZE_BIG = 30;
+    public static final int STROKE_SIZE_MEDIUM = 15;
+    public static final int STROKE_SIZE_SMALL = 7;
+    public static final int STROKE_SIZE_ERASE = 40;
 }

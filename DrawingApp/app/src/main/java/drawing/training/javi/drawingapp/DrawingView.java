@@ -54,7 +54,7 @@ public class DrawingView extends View{
     private sendPlayerPaint mCallbackPaint;
     private Rect clipBounds;
     private int mActivePointerId;
-
+    private int mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
 
 
     public DrawingView(Context context, AttributeSet attrs) {
@@ -74,7 +74,7 @@ public class DrawingView extends View{
 
         drawPaint.setColor(paintColor);
         drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(Constants.STROKE_SIZE);
+        drawPaint.setStrokeWidth(Constants.STROKE_SIZE_MEDIUM);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -119,9 +119,9 @@ public class DrawingView extends View{
         super.onDraw(canvas);
         canvas.save();
         if(mEraseMode)
-            drawPaint.setStrokeWidth(Constants.STROKE_SIZE_ERASE/mScaleFactor);
+            drawPaint.setStrokeWidth(Constants.STROKE_SIZE_ERASE);
         else
-            drawPaint.setStrokeWidth(Constants.STROKE_SIZE /mScaleFactor);
+            drawPaint.setStrokeWidth(mStrokeSize/*Constants.STROKE_SIZE /mScaleFactor*/);
         canvas.translate(mDriftingX, mDriftingY);
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
         canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
@@ -235,7 +235,7 @@ public class DrawingView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX, touchY);
-                mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY, Math.round(12/mScaleFactor), mEraseMode);
+                mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY, mStrokeSize/*Math.round(12/mScaleFactor)*/, mEraseMode);
                 mLastPaintTouchX = touchX;
                 mLastPaintTouchY = touchY;
                 break;
@@ -257,6 +257,10 @@ public class DrawingView extends View{
             throw new ClassCastException(activity.toString()
                     + " must implement sendPlayerPaint");
         }
+    }
+
+    public void setStrokeSize(int strokeSize) {
+        mStrokeSize = strokeSize;
     }
 
     public interface sendPlayerPaint {

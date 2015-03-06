@@ -12,6 +12,8 @@ public class DrawingFragment extends Fragment {
 
     private DrawingView drawView;
 
+    private int mStrokeSize;
+
     public DrawingFragment() {
         setHasOptionsMenu(true);
     }
@@ -30,6 +32,8 @@ public class DrawingFragment extends Fragment {
         drawView.setSize(sizeWidth,sizeHeight);
         drawView.setCallback(getActivity());
         drawView.setPaint(paint);
+
+        mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
 
         final ImageButton mPaintButton = (ImageButton) rootView.findViewById(R.id.btnPaint);
         mPaintButton.setOnClickListener(new View.OnClickListener() {
@@ -53,7 +57,32 @@ public class DrawingFragment extends Fragment {
         mEraserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                drawView.setPaintMode(true);
                 drawView.setEraseMode(true);
+            }
+        });
+
+        final ImageButton mStrokeButton = (ImageButton) rootView.findViewById(R.id.btnStroke);
+        //mEraserButton.setImageDrawable(getResources().getDrawable(R.drawable.icons_status));
+        mStrokeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (mStrokeSize) {
+                    case Constants.STROKE_SIZE_BIG:
+                        mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
+                        mStrokeButton.setImageResource(R.mipmap.ic_stroke2);
+                        break;
+                    case Constants.STROKE_SIZE_MEDIUM:
+                        mStrokeSize = Constants.STROKE_SIZE_SMALL;
+                        mStrokeButton.setImageResource(R.mipmap.ic_stroke3);
+                        break;
+                    case Constants.STROKE_SIZE_SMALL:
+                        mStrokeSize = Constants.STROKE_SIZE_BIG;
+                        mStrokeButton.setImageResource(R.mipmap.ic_stroke1);
+                        break;
+                    default: break;
+                }
+                drawView.setStrokeSize(mStrokeSize);
             }
         });
 
