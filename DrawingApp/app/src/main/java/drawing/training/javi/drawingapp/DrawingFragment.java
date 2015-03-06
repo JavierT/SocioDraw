@@ -35,6 +35,7 @@ public class DrawingFragment extends Fragment {
         mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                drawView.setEraseMode(false);
                 drawView.setPaintMode(true);
             }
         });
@@ -44,6 +45,15 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 drawView.setPaintMode(false);
+            }
+        });
+
+        final ImageButton mEraserButton = (ImageButton) rootView.findViewById(R.id.btnEraser);
+        //mEraserButton.setImageDrawable(getResources().getDrawable(R.drawable.icons_status));
+        mEraserButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawView.setEraseMode(true);
             }
         });
 

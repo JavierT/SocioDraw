@@ -30,12 +30,12 @@
             android:contentDescription="@string/brush"
             android:src="@mipmap/ic_hand"/>
 
-        <!--<ImageButton-->
-            <!--android:id="@+id/erase_btn"-->
-            <!--android:layout_width="fill_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:contentDescription="@string/erase"-->
-            <!--android:src="@drawable/ic_eraser"/>-->
+        <ImageButton
+            android:id="@+id/btnEraser"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/erase"
+            android:src="@mipmap/ic_eraser"/>
 
         <!--<ImageButton-->
             <!--android:id="@+id/save_btn"-->

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -252,7 +253,7 @@ public class JoinActivity extends ActionBarActivity
     }
 
     @Override
-    public void sendPaint(float fromX, float fromY, float toX, float toY) {
+    public void sendPaint(float fromX, float fromY, float toX, float toY, int stroke, boolean erase) {
         //Message msg = mHandler.obtainMessage(MESSAGE_POST_TOAST,"Received point: " + to.toString());
         //mHandler.sendMessage(msg);
         //DrawingPath paintPath = new DrawingPath(from,to, mColorSelected);
@@ -261,7 +262,11 @@ public class JoinActivity extends ActionBarActivity
         paintPath.fromY = fromY;
         paintPath.toX = toX;
         paintPath.toY = toY;
-        paintPath.color = mColorSelected;
+        if(erase)
+            paintPath.color = Color.WHITE;
+        else
+            paintPath.color = mColorSelected;
+        paintPath.stroke = stroke;
         Message msg2 = mBusHandler.obtainMessage(ClientBusHandler.CLIENT_SEND_POINT, paintPath);
         mBusHandler.sendMessage(msg2);
     }

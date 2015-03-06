@@ -77,9 +77,11 @@ public class ScreenView extends View {
     }
 
     public void paintPoints(DrawingPath points) {
-        drawPaint.setColor(points.color);
+
         drawPath.moveTo((float)points.fromX, (float)points.fromY);
         drawPath.lineTo((float)points.toX, (float)points.toY);
+        drawPaint.setStrokeWidth(points.stroke);
+        drawPaint.setColor(points.color);
         drawCanvas.drawPath(drawPath,drawPaint);
         drawPath.reset();
         invalidate(); //invalidate view to repaint

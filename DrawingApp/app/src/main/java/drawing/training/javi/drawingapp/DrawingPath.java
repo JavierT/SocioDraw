@@ -24,6 +24,8 @@ public class DrawingPath {
     @Position(4)
     public int color;
 
+    @Position(5)
+    public int stroke;
 //
 //    public DrawingPath() {
 //        this.fromX= 0.0f;

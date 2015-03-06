@@ -48,12 +48,13 @@ public class DrawingView extends View{
     private float mScaleFactor = 1.f;
 
     private boolean mPaintMode = true;
-
+    private boolean mEraseMode = false;
 
 
     private sendPlayerPaint mCallbackPaint;
     private Rect clipBounds;
     private int mActivePointerId;
+
 
 
     public DrawingView(Context context, AttributeSet attrs) {
@@ -73,7 +74,7 @@ public class DrawingView extends View{
 
         drawPaint.setColor(paintColor);
         drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(20);
+        drawPaint.setStrokeWidth(Constants.STROKE_SIZE);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -117,7 +118,10 @@ public class DrawingView extends View{
         //draw view
         super.onDraw(canvas);
         canvas.save();
-        drawPaint.setStrokeWidth(12/mScaleFactor);
+        if(mEraseMode)
+            drawPaint.setStrokeWidth(Constants.STROKE_SIZE_ERASE/mScaleFactor);
+        else
+            drawPaint.setStrokeWidth(Constants.STROKE_SIZE /mScaleFactor);
         canvas.translate(mDriftingX, mDriftingY);
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
         canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
@@ -231,7 +235,7 @@ public class DrawingView extends View{
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX, touchY);
-                mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY);
+                mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY, Math.round(12/mScaleFactor), mEraseMode);
                 mLastPaintTouchX = touchX;
                 mLastPaintTouchY = touchY;
                 break;
@@ -256,7 +260,7 @@ public class DrawingView extends View{
     }
 
     public interface sendPlayerPaint {
-        public void sendPaint(float fromX, float fromY, float toX, float toY);
+        public void sendPaint(float fromX, float fromY, float toX, float toY, int stroke, boolean erase);
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -279,8 +283,15 @@ public class DrawingView extends View{
         mPaintMode = status;
     }
 
-    public boolean getPaintMode() {
-        return mPaintMode;
+    public void setEraseMode(boolean status) {
+        mEraseMode = status;
+        if(mEraseMode) {
+            drawPaint.setColor(Color.WHITE);
+        }
+        else
+            drawPaint.setColor(paintColor);
+
     }
+
 
 }
