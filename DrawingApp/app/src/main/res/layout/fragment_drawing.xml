@@ -17,32 +17,32 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/btnMode"
+            android:id="@+id/btnPaint"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:contentDescription="@string/start_new"
-            android:src="@drawable/ic_new"/>
+            android:src="@mipmap/ic_brush"/>
 
         <ImageButton
-            android:id="@+id/draw_btn"
+            android:id="@+id/btnHand"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:contentDescription="@string/brush"
-            android:src="@drawable/ic_brush"/>
+            android:src="@mipmap/ic_hand"/>
 
-        <ImageButton
-            android:id="@+id/erase_btn"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/erase"
-            android:src="@drawable/ic_eraser"/>
+        <!--<ImageButton-->
+            <!--android:id="@+id/erase_btn"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:contentDescription="@string/erase"-->
+            <!--android:src="@drawable/ic_eraser"/>-->
 
-        <ImageButton
-            android:id="@+id/save_btn"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/save"
-            android:src="@drawable/ic_save"/>
+        <!--<ImageButton-->
+            <!--android:id="@+id/save_btn"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:contentDescription="@string/save"-->
+            <!--android:src="@drawable/ic_save"/>-->
 
     </LinearLayout>
 

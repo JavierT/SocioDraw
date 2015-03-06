@@ -31,12 +31,19 @@ public class DrawingFragment extends Fragment {
         drawView.setCallback(getActivity());
         drawView.setPaint(paint);
 
-        ImageButton mModeButton = (ImageButton) rootView.findViewById(R.id.btnMode);
-        //mModeButton.setTypeface(MainActivity.handwritingFont);
-        mModeButton.setOnClickListener(new View.OnClickListener() {
+        final ImageButton mPaintButton = (ImageButton) rootView.findViewById(R.id.btnPaint);
+        mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawView.setPaintMode(!drawView.getPaintMode());
+                drawView.setPaintMode(true);
+            }
+        });
+
+        final ImageButton mHandButton = (ImageButton) rootView.findViewById(R.id.btnHand);
+        mHandButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawView.setPaintMode(false);
             }
         });
 

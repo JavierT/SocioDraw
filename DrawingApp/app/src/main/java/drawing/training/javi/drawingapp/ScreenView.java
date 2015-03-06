@@ -3,6 +3,7 @@ package drawing.training.javi.drawingapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -55,8 +56,9 @@ public class ScreenView extends View {
         //view given size
         super.onSizeChanged(w,h,oldw,oldh);
 
-        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.ARGB_8888);
+        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565 );
         drawCanvas = new Canvas(canvasBitmap);
+        drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();
         mat=new Matrix();
         mat.setTranslate( clipBounds.left, clipBounds.top );

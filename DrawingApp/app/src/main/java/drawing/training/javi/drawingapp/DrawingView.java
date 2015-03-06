@@ -78,7 +78,7 @@ public class DrawingView extends View{
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        canvasBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        canvasBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565 );
         drawCanvas = new Canvas(canvasBitmap);
         clipBounds = drawCanvas.getClipBounds();
 
@@ -92,7 +92,7 @@ public class DrawingView extends View{
 
     public void setSize(int w, int h) {
         canvasBitmap.recycle();
-        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565 );
         drawCanvas = new Canvas(canvasBitmap);
         drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();

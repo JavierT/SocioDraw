@@ -1,6 +1,7 @@
 package drawing.training.javi.drawingapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -115,15 +116,18 @@ public class MainActivity extends ActionBarActivity
     /////////////////////////////////////////////////////////////////////////////////////
     public void openCreateOptionsFragment() {
 
-        createFragment = new CreateOptionsFragment();
-        Bundle args = new Bundle();
-        args.putString(getString(R.string.username), mUsername);
-        createFragment.setArguments(args);
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, createFragment)
-                .addToBackStack(null)
-                .commit();
+//        createFragment = new CreateOptionsFragment();
+//        Bundle args = new Bundle();
+//        args.putString(getString(R.string.username), mUsername);
+//        createFragment.setArguments(args);
+//
+//        getSupportFragmentManager().beginTransaction()
+//                .replace(R.id.container, createFragment)
+//                .addToBackStack(null)
+//                .commit();
+        Intent myIntent = new Intent(this, CreateActivity.class);
+        myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
+        this.startActivity(myIntent);
 
     }
 }
