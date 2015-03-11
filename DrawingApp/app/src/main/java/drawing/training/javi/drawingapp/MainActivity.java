@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.FragmentActivity;
 
 
-public class MainActivity extends ActionBarActivity
+public class MainActivity extends FragmentActivity
         implements WelcomeFragment.saveUsername, MenuFragment.createGame {
 
     public static Typeface handwritingFont;

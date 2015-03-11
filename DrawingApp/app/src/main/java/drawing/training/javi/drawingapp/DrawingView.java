@@ -97,12 +97,16 @@ public class DrawingView extends View{
         drawCanvas = new Canvas(canvasBitmap);
         drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();
+
     }
 
-//    @Override
-//    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 //        //view given size
-//        super.onSizeChanged(w,h,oldw,oldh);
+        super.onSizeChanged(w,h,oldw,oldh);
+
+        mScaleFactor = (float)(w-10)/(float)Constants.WIDTH;
+        mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
 //
 //        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.ARGB_8888);
 //        drawCanvas = new Canvas(canvasBitmap);
@@ -111,7 +115,7 @@ public class DrawingView extends View{
 //        //Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
 //        //        + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
 //        //Log.d("DrawingApp. OnSize", "Drawingspace size: H:" + this.getWidth() + " H: " + this.getHeight()) ;
-//    }
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -121,8 +125,9 @@ public class DrawingView extends View{
         if(mEraseMode)
             drawPaint.setStrokeWidth(Constants.STROKE_SIZE_ERASE);
         else
-            drawPaint.setStrokeWidth(mStrokeSize/*Constants.STROKE_SIZE /mScaleFactor*/);
+            drawPaint.setStrokeWidth(mStrokeSize);
         canvas.translate(mDriftingX, mDriftingY);
+
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
         canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
         canvas.drawPath(drawPath, drawPaint);
@@ -246,7 +251,6 @@ public class DrawingView extends View{
             default:
                 return;
         }
-        return;
     }
 
 

@@ -11,7 +11,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.FragmentActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -34,7 +34,7 @@ import java.util.Arrays;
 //import org.alljoyn.bus.ProxyBusObject;
 
 
-public class JoinActivity extends ActionBarActivity
+public class JoinActivity extends FragmentActivity
     implements JoinFragment.setPlayerReady, JoinFragment.setPlayerColor,
                 DrawingView.sendPlayerPaint {
     /* Load the native alljoyn_java library */

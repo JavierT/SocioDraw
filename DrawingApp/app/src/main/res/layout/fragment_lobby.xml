@@ -4,36 +4,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#698de3f1"
-    android:paddingTop="15dp"
+    android:paddingTop="5dp"
     android:paddingRight="20dp"
     android:paddingLeft="20dp"
-    android:paddingBottom="15dp"
+    android:paddingBottom="10dp"
     android:gravity="top">
 
     <TextView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginBottom="20dp"
         android:id="@+id/txtLobby"
         android:text="@string/lobby"
-        android:layout_weight="1"
+        android:layout_weight="1.25"
         android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="left"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/txtLobbyPlayer"
-        android:text="@string/lobby_player"
-        android:layout_weight="0.5" />
 
     <ListView android:id="@+id/lvPlayers"
         android:layout_width="fill_parent"
         android:layout_height="200dp"
         android:transcriptMode="alwaysScroll"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:background="#6962afbd"
         android:layout_marginBottom="10dp"
         android:gravity="top"/>
@@ -52,12 +43,12 @@
             android:layout_weight="1" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|right"
             android:id="@+id/btnLobbyStart"
             android:text="@string/lobby_Start"
-            android:layout_weight="1"
+            android:layout_weight="0.50"
             android:textColor="#ffff0000" />
 
     </LinearLayout>

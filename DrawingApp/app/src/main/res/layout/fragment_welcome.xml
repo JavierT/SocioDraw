@@ -7,72 +7,36 @@
     android:gravity="center_vertical"
     android:weightSum="1">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <TextView
         android:layout_width="fill_parent"
-        android:layout_height="170dp">
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Please introduce your name"
+        android:id="@+id/txtName"
+        android:gravity="left|bottom"
+        android:paddingLeft="10dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp" />
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="50dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Please introduce your name"
-            android:id="@+id/txtName"
-            android:gravity="left|bottom"
-            android:paddingLeft="10dp"
-            android:layout_weight="0.05"
-            android:layout_gravity="center"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="10dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
+    <EditText
         android:layout_width="wrap_content"
-        android:layout_height="150dp"
-        android:layout_gravity="center_horizontal">
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/etxtName"
+        android:layout_gravity="center"
+        android:layout_margin="20dp" />
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center_horizontal">
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="50dp"
-                android:inputType="textPersonName"
-                android:ems="10"
-                android:id="@+id/etxtName"
-                android:layout_gravity="center_vertical" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="center_horizontal">
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center|right"
-            android:weightSum="1">
-
-            <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="150dp"
-                android:layout_height="50dp"
-                android:text="Continue"
-                android:id="@+id/btnContinue"
-                android:layout_marginRight="25dp"
-                android:layout_gravity="center|right"
-                android:layout_weight="0.80"
-                android:background="@mipmap/paper_style" />
-        </LinearLayout>
-    </LinearLayout>
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="150dp"
+        android:layout_height="75dp"
+        android:text="Continue"
+        android:id="@+id/btnContinue"
+        android:layout_marginRight="25dp"
+        android:layout_gravity="center|right"
+        android:background="@mipmap/paper_style"
+        android:layout_marginTop="25dp" />
 
 </LinearLayout>

@@ -8,10 +8,15 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.alljoyn.bus.BusAttachment;
@@ -25,8 +30,11 @@ import org.alljoyn.bus.Status;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
-public class CreateActivity extends ActionBarActivity
+public class CreateActivity extends FragmentActivity
     implements LobbyFragment.setStartGame {
 
     /* Load the native alljoyn_java library */
@@ -43,9 +51,11 @@ public class CreateActivity extends ActionBarActivity
     private static final int MESSAGE_REMOVE_PLAYER = 5;
     private static final int MESSAGE_SET_GAME_READY = 6;
     private static final int MESSAGE_PAINT_POINTS = 7;
+    private static final int MESSAGE_UPDATE_DRAWING_COUNTER = 8;
 
     public static final int SERVICE_CONNECT = 1;
     public static final int SERVICE_DISCONNECT = 2;
+
 
     private Handler mHandler = new Handler() {
 
@@ -61,24 +71,31 @@ public class CreateActivity extends ActionBarActivity
                     mLobbyFragment.setReady(playerName,mCurrentPlayers.get(playerName).ready);
                     break;
                 case MESSAGE_POST_TOAST:
-                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), (String) msg.obj,
+                                    Toast.LENGTH_LONG).show();
                     break;
                 case MESSAGE_COLOR_SELECTED:
                     String name = (String) msg.obj;
-                    Toast toast = Toast.makeText(getApplicationContext(), "The player " + name + "has taken this color", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getApplicationContext(), "The player " + name
+                                                + "has taken this color", Toast.LENGTH_SHORT);
                     toast.getView().findViewById(android.R.id.message);
                     mLobbyFragment.updatePlayerColor(name,mCurrentPlayers.get(name).color);
                     // Optional set name of player in that color.
                     break;
                 case MESSAGE_REMOVE_PLAYER:
-                    Toast.makeText(getApplicationContext(), "The player " + msg.obj + " left the game", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "The player " + msg.obj
+                                    + " left the game", Toast.LENGTH_LONG).show();
                     mLobbyFragment.removePlayer((String) msg.obj);
                     break;
                 case MESSAGE_SET_GAME_READY:
                     mLobbyFragment.updateStartGameButton(mAllPlayersReady);
                     break;
                 case MESSAGE_PAINT_POINTS:
+                    //mPagerAdapter.getItem(Constants.SCREEN_ID)
                     mScreenFragment.paintPoints((DrawingPath) msg.obj);
+                    break;
+                case MESSAGE_UPDATE_DRAWING_COUNTER:
+                    mDrawingCounterView.setText((String) msg.obj);
                     break;
                 default:
                     break;
@@ -86,9 +103,13 @@ public class CreateActivity extends ActionBarActivity
         }
     };
 
+    /** maintains the pager adapter*/
+    private PagerAdapter mPagerAdapter;
+
     // Fragments associated to this activity
     private LobbyFragment mLobbyFragment;
     private ScreenFragment mScreenFragment;
+    private PatternFragment mPatternFragment;
 
     // The Alljoyn object that is our service
     private DrawingService mDrawingService;
@@ -103,8 +124,9 @@ public class CreateActivity extends ActionBarActivity
     private boolean mAllPlayersReady = false;
     private ProgressDialog myProgressDialog;
 
-    private int mSecondsToStart = -1;
+    private int mSecondsRemaining = -1;
     private String mUsername;
+    private TextView mDrawingCounterView;
 
 
     @Override
@@ -185,16 +207,17 @@ public class CreateActivity extends ActionBarActivity
         myProgressDialog.setMessage("The game will start in 5 seconds...");
         myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         myProgressDialog.show();
-        mSecondsToStart = Constants.countdownTimer;
+        mSecondsRemaining = Constants.countdownTimer;
         new CountDownTimer(Constants.countdownTimer*1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
-                mSecondsToStart--;
-                myProgressDialog.setMessage("The game will start in "+ millisUntilFinished / 1000 + " seconds...");
+                mSecondsRemaining--;
+                myProgressDialog.setMessage("The game will start in "+
+                        millisUntilFinished / 1000 + " seconds...");
             }
 
             public void onFinish() {
-                mSecondsToStart = 0;
+                mSecondsRemaining = 0;
                 myProgressDialog.dismiss();
                 openScreenFragment();
             }
@@ -206,14 +229,101 @@ public class CreateActivity extends ActionBarActivity
      */
     public void openScreenFragment() {
 
+        getSupportFragmentManager().beginTransaction().remove(mLobbyFragment).commit();
         mScreenFragment = new ScreenFragment();
+        mPatternFragment = new PatternFragment();
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.createContainer, mScreenFragment)
-                .addToBackStack(null)
-                .commit();
+        this.initialisePaging();
+
+//        getSupportFragmentManager().beginTransaction()
+//                .replace(R.id.createContainer, mScreenFragment)
+//                .addToBackStack(null)
+//                .commit();
     }
 
+    /**
+     * Initialise the fragments to be paged
+     */
+    private void initialisePaging() {
+
+        List<Fragment> fragments = new Vector<>();
+        fragments.add(Constants.PATTERN_ID, mPatternFragment);
+        fragments.add(Constants.SCREEN_ID, mScreenFragment);
+
+
+
+        this.mPagerAdapter  = new PagerAdapter(getSupportFragmentManager(), fragments);
+        //
+        ViewPager pager = (ViewPager)findViewById(R.id.viewpager);
+        pager.setAdapter(this.mPagerAdapter);
+
+        pager.setCurrentItem(Constants.PATTERN_ID);
+
+        mDrawingCounterView = (TextView)findViewById(R.id.txtDrawiningCounter);
+        mDrawingCounterView.setTypeface(MainActivity.handwritingFont);
+        initDrawingCounter();
+    }
+
+    private void initDrawingCounter() {
+        mSecondsRemaining = Constants.drawingTimer;
+        new CountDownTimer(Constants.drawingTimer*1000, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                mSecondsRemaining--;
+                long minutes = TimeUnit.SECONDS.toMinutes(mSecondsRemaining);
+                long seconds = mSecondsRemaining - TimeUnit.MINUTES.toSeconds(minutes);
+                String counterString;
+                if(seconds < 10)
+                    counterString = "Time remaining "+ String.format("%d:0%d", minutes, seconds);
+
+                else
+                    counterString = "Time remaining "+ String.format("%d:%d", minutes, seconds);
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, counterString));
+            }
+
+            public void onFinish() {
+                mSecondsRemaining = 0;
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Stop drawing"));
+            }
+        }.start();
+    }
+
+    /**********************************************************************************************/
+    public class PagerAdapter extends FragmentPagerAdapter {
+
+        private List<Fragment> fragments;
+        /**
+         * @param fm: Fragment manager
+         * @param fragments: fragments in the pager
+         */
+        public PagerAdapter(FragmentManager fm, List<Fragment> fragments) {
+            super(fm);
+            this.fragments = fragments;
+        }
+        /* (non-Javadoc)
+         * @see android.support.v4.app.FragmentPagerAdapter#getItem(int)
+         */
+        @Override
+        public Fragment getItem(int position) {
+            if(position == Constants.SCREEN_ID)
+            return this.fragments.get( Constants.SCREEN_ID);
+            else
+                return this.fragments.get(Constants.PATTERN_ID);
+        }
+
+        /* (non-Javadoc)
+         * @see android.support.v4.view.PagerAdapter#getCount()
+         */
+        @Override
+        public int getCount() {
+            return this.fragments.size();
+        }
+    }
+    /**********************************************************************************************/
+
+
+    /**********************************************************************************************/
     // The class that is our Alljoyn service. It implements the DrawingInterface
     public class DrawingService implements DrawingInterface, BusObject {
 
@@ -334,7 +444,7 @@ public class CreateActivity extends ActionBarActivity
          */
         public int getLobbyStatus() throws BusException {
 
-            return mSecondsToStart;
+            return mSecondsRemaining;
         }
 
         /**
@@ -357,11 +467,8 @@ public class CreateActivity extends ActionBarActivity
             mHandler.sendMessage(mHandler.obtainMessage(what,obj));
         }
 
-        private void sendUiMessage(int what) {
-            mHandler.sendEmptyMessage(what);
-        }
-
     }
+    /**********************************************************************************************/
 
     private boolean checkStatus() {
         if(mCurrentPlayers.size()<2)

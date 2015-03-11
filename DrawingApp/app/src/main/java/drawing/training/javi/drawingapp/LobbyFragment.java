@@ -2,21 +2,15 @@ package drawing.training.javi.drawingapp;
 
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,8 +36,8 @@ public class LobbyFragment extends Fragment {
 
         TextView txt = (TextView) rootView.findViewById(R.id.txtLobby);
         txt.setTypeface(MainActivity.handwritingFont);
-        txt = (TextView) rootView.findViewById(R.id.txtLobbyPlayer);
-        txt.setTypeface(MainActivity.handwritingFont);
+//        txt = (TextView) rootView.findViewById(R.id.txtLobbyPlayer);
+//        txt.setTypeface(MainActivity.handwritingFont);
 
         mReadyButton = (Button) rootView.findViewById(R.id.btnLobbyStart);
         mReadyButton.setTypeface(MainActivity.handwritingFont);
@@ -117,14 +111,14 @@ public class LobbyFragment extends Fragment {
     /**
      * If all the players are ready, the button is enabled
      * Otherwise, is disabled and put in red.
-     * @param status
+     * @param status:
      */
     public void updateStartGameButton(boolean status) {
         mReadyButton.setClickable(status);
         if(!status)
             mReadyButton.setTextColor(Color.RED);
         else
-            mReadyButton.setTextColor(Color.GREEN);
+            mReadyButton.setTextColor(Color.parseColor("#006400"));
     }
 
 
@@ -189,7 +183,7 @@ public class LobbyFragment extends Fragment {
             TextView textView = (TextView) rowView.findViewById(R.id.txtPlayerName);
             ImageView imageView = (ImageView) rowView.findViewById(R.id.ivPlayerStatus);
             textView.setTypeface(MainActivity.handwritingFont);
-            textView.setTextSize(24);
+            textView.setTextSize(18);
 
             final Player p = mPlayersConnected.get(position);
             textView.setTextColor(Color.parseColor(p.color));

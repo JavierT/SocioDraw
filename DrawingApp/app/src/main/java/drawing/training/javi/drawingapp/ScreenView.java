@@ -60,6 +60,9 @@ public class ScreenView extends View {
         drawCanvas = new Canvas(canvasBitmap);
         drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();
+
+        // We calculate the matrix needed to scale the canvas into the screen
+        // dimensions.
         mat=new Matrix();
         mat.setTranslate( clipBounds.left, clipBounds.top );
         mat.setScale(w/totalWidth ,h/totalHeight);
@@ -85,14 +88,6 @@ public class ScreenView extends View {
         drawCanvas.drawPath(drawPath,drawPaint);
         drawPath.reset();
         invalidate(); //invalidate view to repaint
-    }
-
-    public int getCanvasWidth() {
-        return canvasBitmap.getWidth();
-    }
-
-    public int getCanvasHeight() {
-        return canvasBitmap.getHeight();
     }
 
 //    public void setCanvasWidth(int h) {

@@ -36,6 +36,7 @@ public class DrawingFragment extends Fragment {
         mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
 
         final ImageButton mPaintButton = (ImageButton) rootView.findViewById(R.id.btnPaint);
+        mPaintButton.setBackgroundColor(paint);
         mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
