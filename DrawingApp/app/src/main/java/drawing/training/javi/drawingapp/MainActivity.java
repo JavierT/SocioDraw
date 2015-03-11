@@ -49,6 +49,7 @@ public class MainActivity extends FragmentActivity
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.container, menuFragment)
                         .commit();
+
             }
         }
 

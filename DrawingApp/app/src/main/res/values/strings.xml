@@ -34,5 +34,6 @@
     <string name="txtGuessTitle">It\'s your turn to guess!</string>
     <string name="stroke">stroke size</string>
     <string name="pattern_picture">test_pattern</string>
+    <string name="arrow_descriptor">Go to drawing screen</string>
 
 </resources>

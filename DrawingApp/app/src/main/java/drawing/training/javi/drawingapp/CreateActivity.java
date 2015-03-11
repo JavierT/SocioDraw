@@ -127,6 +127,7 @@ public class CreateActivity extends FragmentActivity
     private int mSecondsRemaining = -1;
     private String mUsername;
     private TextView mDrawingCounterView;
+    private boolean mDrawingStatus = false;
 
 
     @Override
@@ -266,6 +267,7 @@ public class CreateActivity extends FragmentActivity
 
     private void initDrawingCounter() {
         mSecondsRemaining = Constants.drawingTimer;
+        mDrawingStatus = true;
         new CountDownTimer(Constants.drawingTimer*1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
@@ -283,6 +285,7 @@ public class CreateActivity extends FragmentActivity
 
             public void onFinish() {
                 mSecondsRemaining = 0;
+                mDrawingStatus = false;
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Stop drawing"));
             }
@@ -451,12 +454,12 @@ public class CreateActivity extends FragmentActivity
          * Send to the UI the points to paint.
          * @param points Structure with the starting point and the end point
          *               as well the color chosen by the player
-         * @return true if received
+         * @return true if received, false if the time is up
          * @throws BusException
          */
         public boolean sendPoint(DrawingPath points) throws BusException {
             //sendUiMessage(MESSAGE_POST_TOAST,"RECEIVED POINTS  "+ points.fromX+", " + points.fromY );
-            if(points==null)
+            if(mDrawingStatus && mSecondsRemaining<=0) // if the time is up
                 return false;
             sendUiMessage(MESSAGE_PAINT_POINTS, points);
             return true;
