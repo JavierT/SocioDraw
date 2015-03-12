@@ -62,6 +62,7 @@ public class JoinActivity extends FragmentActivity
     protected ArrayList<String> mAvailableColors;
     private boolean mPlayerReady = false;
     private int mColorSelected;
+    private boolean mDrawingTime = false;
 
 
     private Handler mHandler = new Handler() {
@@ -71,11 +72,19 @@ public class JoinActivity extends FragmentActivity
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MESSAGE_POST_TOAST:
-                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show() ;
                     break;
                 case MESSAGE_START_PROGRESS_DIALOG:
                     mDialog = ProgressDialog.show(JoinActivity.this, "", "Finding Drawing Service.\n Please wait...", true, true);
-                    mDialog.setCancelable(false);
+                    mDialog.setCancelable(true);
+                    mDialog.setCanceledOnTouchOutside(false);
+                    mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            mDialog.dismiss();
+                            exitDialog();
+                        }
+                    });
                     break;
                 case MESSAGE_STOP_PROGRESS_DIALOG:
                     mDialog.dismiss();
@@ -103,7 +112,9 @@ public class JoinActivity extends FragmentActivity
     };
 
 
-
+    /**
+     * Gets a new name for the player if it was already taken
+     */
     private void getNewNameFromDialog() {
         final AlertDialog alert = new AlertDialog.Builder(this).create();
         alert.setTitle("Select a new name");
@@ -192,6 +203,41 @@ public class JoinActivity extends FragmentActivity
         mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_DISCONNECT);
     }
 
+    @Override
+    public void onBackPressed() {
+        exitDialog();
+    }
+
+
+    private void exitDialog() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(R.string.quit)
+                .setMessage(R.string.really_quit)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (mBusHandler.isConnected())
+                            mBusHandler.sendEmptyMessage(mBusHandler.CLIENT_DISCONNECT);
+                        else
+                            mBusHandler.exitGame();
+                    }
+
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (!mBusHandler.isConnected()) {
+                            mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
+                        }
+
+                    }
+
+                })
+                .show();
+    }
+
+
     /**
      * Interface coming from the Join fragment. Ready button clicked.
      * @param ready Set the button ready behaviour
@@ -250,6 +296,8 @@ public class JoinActivity extends FragmentActivity
                 .replace(R.id.joinContainer, mDrawingFragment)
                 .addToBackStack(null)
                 .commit();
+
+        mDrawingTime = true;
     }
 
     @Override
@@ -257,6 +305,8 @@ public class JoinActivity extends FragmentActivity
         //Message msg = mHandler.obtainMessage(MESSAGE_POST_TOAST,"Received point: " + to.toString());
         //mHandler.sendMessage(msg);
         //DrawingPath paintPath = new DrawingPath(from,to, mColorSelected);
+        if(!mDrawingTime)
+            return;
         DrawingPath paintPath = new DrawingPath();
         paintPath.fromX = fromX;
         paintPath.fromY = fromY;
@@ -324,9 +374,9 @@ public class JoinActivity extends FragmentActivity
                     mBus = new BusAttachment(getPackageName(), BusAttachment.RemoteMessage.Receive);
 
                     mBus.useOSLogging(true);
-                    mBus.setDebugLevel("ALL", 1);
-                    mBus.setDebugLevel("ALLJON", 7);
-                    mBus.setDaemonDebug("ALL", 7);
+                    //mBus.setDebugLevel("ALL", 1);
+                    //mBus.setDebugLevel("ALLJOYN", 7);
+                    //mBus.setDaemonDebug("ALL", 7);
 
                     // Create a bus listener class
                     mBus.registerBusListener(new BusListener() {
@@ -395,7 +445,8 @@ public class JoinActivity extends FragmentActivity
                         public void sessionLost(int sessionId, int reason) {
                             mIsConnected = false;
                             logInfo(String.format("MyBusListener.sessionLost(sessionId = %d, reason = %d)", sessionId, reason));
-                            mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
+                            //mHandler.sendEmptyMessage(MESSAGE_START_PROGRESS_DIALOG);
+                            setTimerToReconnect();
                         }
 
                     });
@@ -467,16 +518,13 @@ public class JoinActivity extends FragmentActivity
                         Status status = mBus.leaveSession(mSessionId);
                         logStatus("BusAttachment.leaveSession()", status);
                     }
-                    mBus.disconnect();
-                    getLooper().quit();
-                    finish();
+                    exitGame();
                     break;
                 }
 
                 case CLIENT_SET_COLOR: {
                     String param = (String)msg.obj;
                     try {
-                        Log.d("DrawingApp" , "Enviando:" + mUsername + " y " + param);
                         String[] colors = mDrawingInterface.setPlayerColor(mUsername, param);
 
                         if(colors[0].equals(DrawingInterface.USERNAME_NOT_FOUND))
@@ -512,22 +560,6 @@ public class JoinActivity extends FragmentActivity
                     break;
                 }
 
-//                case CLIENT_GET_SCREEN_SIZE: {
-//                    try {
-//                        ScreenSize size = mDrawingInterface.getScreenSize();
-//                        if (size.width == -1) {
-//                            sendUiMessage(MESSAGE_SET_NOT_READY, "Size denied");
-//                            mBusHandler.sendEmptyMessage(CLIENT_DISCONNECT);
-//                        }
-//                    } catch (BusException e) {
-//                        logException("DrawingInterface.getScreenSize()", e);
-//                        sendUiMessage(MESSAGE_POST_TOAST, "Size can't be retreived.");
-//                        mBusHandler.sendEmptyMessage(CLIENT_DISCONNECT);
-//                        return;
-//                    }
-//                    break;
-//                }
-
                 case CLIENT_WAITING: {
                     // If our status changed we are not longer in this state.
                     if(!mPlayerReady)
@@ -557,10 +589,18 @@ public class JoinActivity extends FragmentActivity
                     try {
                         DrawingPath param = (DrawingPath)msg.obj;
                         if(!mDrawingInterface.sendPoint(param))
-                            sendUiMessage(MESSAGE_POST_TOAST, "Point can't be sent");
+                        {
+                            // If returns false, the time to draw is over.
+                            // We only show a toast once.
+                            if(mDrawingTime) {
+                                sendUiMessage(MESSAGE_POST_TOAST, "Time is up!");
+                            }
+                            mDrawingTime = false;
+                        }
+
                     } catch (BusException e) {
-                        logException("DrawingInterface.getLobbyStatus()", e);
-                        sendUiMessage(MESSAGE_POST_TOAST, "Status can't be retreived");
+                        logException("DrawingInterface.sendPoint()", e);
+                        sendUiMessage(MESSAGE_POST_TOAST, "Point can't be sent");
                     }
                     break;
                 }
@@ -568,6 +608,16 @@ public class JoinActivity extends FragmentActivity
                 default:
                     break;
             }
+        }
+
+        public void exitGame() {
+            mBus.disconnect();
+            getLooper().quit();
+            finish();
+        }
+
+        private boolean isConnected() {
+            return mIsConnected;
         }
 
         /* Helper function to send a message to the UI thread. */
@@ -580,7 +630,32 @@ public class JoinActivity extends FragmentActivity
         }
     }
 
+    /**
+     * This function is called when the connection with the server is lost
+     * It sets up a timer for ten seconds to try to recover the connection
+     * If after this 10 seconds, the connection is still lost, the game finishes.
+     */
+    private void setTimerToReconnect() {
+        int countdown = 10;
+        if(!mBusHandler.isConnected()) {
+            final ProgressDialog progress = ProgressDialog.show(this, "Trying to reconnect",
+                    "Game will close in " + countdown + " seconds...", true);
+            new CountDownTimer(countdown*1000, 1000) {
 
+                public void onTick(long millisUntilFinished) {
+                    if(mBusHandler.isConnected()) {
+                        progress.dismiss();
+                    }
+                    progress.setMessage("Game will close in "+ millisUntilFinished / 1000 + " seconds...");
+                }
+
+                public void onFinish() {
+                    progress.dismiss();
+                    mBusHandler.exitGame();
+                }
+            }.start();
+        }
+    }
 
     private void logStatus(String msg, Status status) {
         String log = String.format("%s: %s", msg, status);

@@ -9,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -32,6 +31,7 @@ public class ScreenView extends View {
     private Canvas drawCanvas;
     private Rect clipBounds;
     private Matrix mat;
+    Matrix auxMat;
 
 
     public ScreenView(Context context, AttributeSet attrs) {
@@ -67,8 +67,8 @@ public class ScreenView extends View {
         mat.setTranslate( clipBounds.left, clipBounds.top );
         mat.setScale(w/totalWidth ,h/totalHeight);
 
-        Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
-        Log.d("DrawingApp","Canvas size: " + w + "," + h);
+//        Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
+//        Log.d("DrawingApp","Canvas size: " + w + "," + h);
     }
 
     @Override
@@ -90,16 +90,21 @@ public class ScreenView extends View {
         invalidate(); //invalidate view to repaint
     }
 
-//    public void setCanvasWidth(int h) {
-//        canvasBitmap.setWidth(h);
-//    }
-//
-//    public void setCanvasHeight(int w) {
-//        canvasBitmap.setWidth(w);
-//    }
+    public Bitmap getBitmap()
+    {
+        return canvasBitmap;
+    }
 
-//    public void reconfigureCanvas(int h, int w)
-//    {
-//        canvasBitmap.reconfigure(w,h, Bitmap.Config.ARGB_8888);
-//    }
+
+    public void prepareToSave() {
+        auxMat = new Matrix(mat);
+        mat.setTranslate(0,0);
+        mat.setScale(1.0f,1.0f);
+        invalidate();
+    }
+
+    public void restoreAfterSave() {
+        mat.set(auxMat);
+        invalidate();
+    }
 }

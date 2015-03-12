@@ -1,6 +1,8 @@
 package drawing.training.javi.drawingapp;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -193,6 +195,24 @@ public class CreateActivity extends FragmentActivity
     }
 
     @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(R.string.quit)
+                .setMessage(R.string.really_quit)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mBusHandler.sendEmptyMessage(SERVICE_DISCONNECT);
+                    }
+
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mBusHandler.sendEmptyMessage(SERVICE_DISCONNECT);
@@ -287,7 +307,8 @@ public class CreateActivity extends FragmentActivity
                 mSecondsRemaining = 0;
                 mDrawingStatus = false;
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Stop drawing"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
+                mScreenFragment.savePicture();
             }
         }.start();
     }
@@ -624,6 +645,7 @@ public class CreateActivity extends FragmentActivity
                     mBus.unregisterBusObject(mDrawingService);
                     mBus.disconnect();
                     mBusHandler.getLooper().quit();
+                    finish();
                     break;
                 }
 

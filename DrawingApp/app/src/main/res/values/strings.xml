@@ -29,11 +29,14 @@
     <string name="lobby_Start">Start Game</string>
     <string name="join">You have joined the game</string>
 
-<!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="txtGuessTitle">It\'s your turn to guess!</string>
     <string name="stroke">stroke size</string>
     <string name="pattern_picture">test_pattern</string>
     <string name="arrow_descriptor">Go to drawing screen</string>
+    <string name="quit">Closing game</string>
+    <string name="really_quit">Are you sure you want to close this game?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
 </resources>

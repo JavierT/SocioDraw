@@ -23,5 +23,6 @@ public abstract class Constants {
     public static final int SCREEN_ID = 1;
 
 
-    public static final int drawingTimer = 120;
+    public static final int drawingTimer = 12;
+    public static final String DRAWING_FOLDER = "Imaginary";
 }
