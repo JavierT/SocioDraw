@@ -9,23 +9,6 @@
     android:paddingLeft="20dp"
     android:paddingBottom="15dp">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_marginBottom="20dp"
-        android:id="@+id/txtJoin"
-        android:text="@string/join"
-        android:layout_weight="1"
-        android:textStyle="bold" />
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        android:layout_weight="2">
-
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -166,7 +149,7 @@
                 android:tag="@color/orange" />
 
         </LinearLayout>
-    </LinearLayout>
+
 
 
     <LinearLayout
@@ -194,5 +177,4 @@
             android:textColor="#ff00ac17" />
 
     </LinearLayout>
-
 </LinearLayout>

@@ -90,4 +90,12 @@ public class DrawingFragment extends Fragment {
         return rootView;
     }
 
+    public void clearCanvas() {
+        drawView.setEraseMode(false);
+        drawView.clearCanvas();
+    }
+
+    public void allowDrawing(boolean status) {
+        drawView.setPaintAllowed(status);
+    }
 }

@@ -59,8 +59,10 @@ public class MenuFragment extends Fragment {
 
     private void joinGame() {
         Intent myIntent = new Intent(getActivity(), JoinActivity.class);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
         this.startActivity(myIntent);
+        getActivity().finish();
     }
 
     @Override

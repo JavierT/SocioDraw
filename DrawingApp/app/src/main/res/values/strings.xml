@@ -38,5 +38,10 @@
     <string name="really_quit">Are you sure you want to close this game?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="continueBtn">Continue</string>
+    <string name="gameOver">The game is over</string>
+    <string name="gameOverDesc">Do you want to play again?</string>
+    <string name="exit">Exit</string>
+    <string name="playAgain">Play again</string>
 
 </resources>

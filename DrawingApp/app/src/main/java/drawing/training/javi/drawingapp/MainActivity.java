@@ -87,14 +87,16 @@ public class MainActivity extends FragmentActivity
 
     /////////////////////////////////////////////////////////////////////////////////////
     //                                                                                 //
-    // Coming from the Menu fragment to change the fragment to create options fragment //
+    // Coming from the Menu fragment to go to create activity                          //
     //                                                                                 //
     /////////////////////////////////////////////////////////////////////////////////////
     public void openCreateOptionsFragment() {
 
         Intent myIntent = new Intent(this, CreateActivity.class);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
         this.startActivity(myIntent);
+        finish();
 
     }
 }

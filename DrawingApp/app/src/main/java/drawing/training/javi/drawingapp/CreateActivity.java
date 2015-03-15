@@ -3,7 +3,6 @@ package drawing.training.javi.drawingapp;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -18,6 +17,8 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -121,16 +122,16 @@ public class CreateActivity extends FragmentActivity
 
     protected HashMap<String, Player> mCurrentPlayers;
     private HashMap<String,Boolean> mColorsAvailable;
-    private String mJoinerName;
-    private int mSessionId;
     private boolean mAllPlayersReady = false;
     private ProgressDialog myProgressDialog;
 
     private int mSecondsRemaining = -1;
-    private String mUsername;
+
     private TextView mDrawingCounterView;
     private boolean mDrawingStatus = false;
-
+    private ViewPager mPager;
+    private Pictures mPatternPictures;
+    private int roundsRemaining = 3; // minimum 3 players to start the game
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,8 +144,6 @@ public class CreateActivity extends FragmentActivity
                     .commit();
         }
 
-        Intent intent = getIntent();
-        mUsername = intent.getStringExtra(getString(R.string.username));
 
         mCurrentPlayers = new HashMap<>();
 
@@ -167,6 +166,7 @@ public class CreateActivity extends FragmentActivity
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.green))),false);
 
+        mPatternPictures = new Pictures();
     }
 
 
@@ -219,13 +219,49 @@ public class CreateActivity extends FragmentActivity
     }
 
     /**
+     * Ask to the create game player if they want to continue playing another rounds or
+     * if they want to left the game.
+     */
+    public void finishGame() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(R.string.gameOver)
+                .setMessage(R.string.gameOverDesc)
+                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mBusHandler.sendEmptyMessage(SERVICE_DISCONNECT);
+                    }
+
+                })
+                .setPositiveButton(R.string.playAgain, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        roundsRemaining = mCurrentPlayers.size() +1;
+                        startNextRound();
+                    }
+
+                })
+
+                .show();
+    }
+
+    /**
      * When the startButton is clicked, then a timer is set up to synchronize
      * with the players and the game changes to the drawing fragment
      */
-    public void startGame() {
+    public void startGame(final boolean isFirstRound) {
         myProgressDialog = new ProgressDialog(this);
-        myProgressDialog.setTitle("Starting the game");
-        myProgressDialog.setMessage("The game will start in 5 seconds...");
+        if(isFirstRound) {
+            myProgressDialog.setTitle("Starting the gam");
+            // Number of rounds (pictures) that is gonna be is the number of players connected + server player
+            roundsRemaining = mCurrentPlayers.size()+1;
+        }
+        else
+            myProgressDialog.setTitle("Starting the next round");
+        myProgressDialog.setMessage("The game will start in " + Constants.countdownTimer + " seconds...");
         myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         myProgressDialog.show();
         mSecondsRemaining = Constants.countdownTimer;
@@ -240,7 +276,12 @@ public class CreateActivity extends FragmentActivity
             public void onFinish() {
                 mSecondsRemaining = 0;
                 myProgressDialog.dismiss();
-                openScreenFragment();
+                if(isFirstRound)
+                    openScreenFragment();
+                else {
+                    initDrawingCounter();
+                    mPager.setCurrentItem(Constants.PATTERN_ID);
+                }
             }
         }.start();
     }
@@ -255,6 +296,8 @@ public class CreateActivity extends FragmentActivity
         mPatternFragment = new PatternFragment();
 
         this.initialisePaging();
+
+        mPatternFragment.setImage(mPatternPictures.getRandomPicture());
 
 //        getSupportFragmentManager().beginTransaction()
 //                .replace(R.id.createContainer, mScreenFragment)
@@ -275,16 +318,20 @@ public class CreateActivity extends FragmentActivity
 
         this.mPagerAdapter  = new PagerAdapter(getSupportFragmentManager(), fragments);
         //
-        ViewPager pager = (ViewPager)findViewById(R.id.viewpager);
-        pager.setAdapter(this.mPagerAdapter);
+        mPager = (ViewPager)findViewById(R.id.viewpager);
+        mPager.setAdapter(this.mPagerAdapter);
 
-        pager.setCurrentItem(Constants.PATTERN_ID);
+        mPager.setCurrentItem(Constants.PATTERN_ID);
 
         mDrawingCounterView = (TextView)findViewById(R.id.txtDrawiningCounter);
         mDrawingCounterView.setTypeface(MainActivity.handwritingFont);
         initDrawingCounter();
     }
 
+    /**
+     * This function sets up the counter for the drawing time. Once the time is done, it shows
+     * a toast and shows the Continue button that when is clicked the next round is prepared.
+     */
     private void initDrawingCounter() {
         mSecondsRemaining = Constants.drawingTimer;
         mDrawingStatus = true;
@@ -304,13 +351,37 @@ public class CreateActivity extends FragmentActivity
             }
 
             public void onFinish() {
-                mSecondsRemaining = 0;
+                //mSecondsRemaining to -1 to tell the client that the counter to the next round did
+                // not started yet.
+                mSecondsRemaining = -1;
                 mDrawingStatus = false;
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
                 mScreenFragment.savePicture();
+                final Button btnContinue =(Button)findViewById(R.id.btnContinue);
+                btnContinue.setTypeface(MainActivity.handwritingFont);
+                btnContinue.setVisibility(View.VISIBLE);
+                btnContinue.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        v.setVisibility(View.GONE);
+                        roundsRemaining--;
+                        if(roundsRemaining>0)
+                            startNextRound();
+                        else
+                            finishGame();
+                    }
+                });
             }
         }.start();
+    }
+
+    private void startNextRound() {
+        startGame(false);
+        if(mPatternPictures.isEmpty())
+            mPatternPictures.reset();
+        mPatternFragment.setImage(mPatternPictures.getRandomPicture());
+        mScreenFragment.clearPicture();
     }
 
     /**********************************************************************************************/
@@ -343,6 +414,7 @@ public class CreateActivity extends FragmentActivity
         public int getCount() {
             return this.fragments.size();
         }
+
     }
     /**********************************************************************************************/
 
@@ -420,7 +492,6 @@ public class CreateActivity extends FragmentActivity
                     colorsAvailable.add(DrawingInterface.NOT_AVAILABLE);
                 }
                 else {
-                    Log.d("DrawingApp Server","Color available ");
                     // Get previous color get by the player:
                     String oldColor = mCurrentPlayers.get(name).color;
                     mColorsAvailable.put(oldColor, false);
@@ -432,7 +503,7 @@ public class CreateActivity extends FragmentActivity
                 for(String s : mColorsAvailable.keySet()) {
                     if(!mColorsAvailable.get(s)) {
                         colorsAvailable.add(s);
-                        Log.d("DrawingApp Server","Imprimiendo colores disponibles: " + s);
+                        Log.d("DrawingApp Server","Available colors: " + s);
                     }
                 }
                 if(mColorsAvailable.isEmpty())
@@ -480,7 +551,7 @@ public class CreateActivity extends FragmentActivity
          */
         public boolean sendPoint(DrawingPath points) throws BusException {
             //sendUiMessage(MESSAGE_POST_TOAST,"RECEIVED POINTS  "+ points.fromX+", " + points.fromY );
-            if(mDrawingStatus && mSecondsRemaining<=0) // if the time is up
+            if(!mDrawingStatus && mSecondsRemaining<=0) // if the time is up
                 return false;
             sendUiMessage(MESSAGE_PAINT_POINTS, points);
             return true;
@@ -621,11 +692,6 @@ public class CreateActivity extends FragmentActivity
                             return (sessionPort == DrawingInterface.CONTACT_PORT);
                         }
 
-                        @Override
-                        public void sessionJoined(short sessionPort, int id, String joiner) {
-                            mSessionId = id;
-                            mJoinerName = joiner;
-                        }
                     });
                     logStatus(String.format("BusAttachment.bindSessionPort(%d, %s)",
                             contactPort.value, sessionOpts.toString()), status);

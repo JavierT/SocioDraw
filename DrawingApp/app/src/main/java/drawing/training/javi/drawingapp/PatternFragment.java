@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 
 /**
@@ -13,6 +14,8 @@ import android.view.ViewGroup;
  */
 public class PatternFragment extends Fragment {
 
+
+    private ImageView mImgPattern;
 
     public PatternFragment() {
         // Required empty public constructor
@@ -23,7 +26,16 @@ public class PatternFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_pattern, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_pattern, container, false);
+
+        mImgPattern = (ImageView) rootView.findViewById(R.id.imgPattern);
+
+        return rootView;
+    }
+
+    public void setImage(int url) {
+        mImgPattern.setImageResource(url);
     }
 
 

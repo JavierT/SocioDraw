@@ -33,9 +33,7 @@ public class JoinFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_join, container, false);
 
-        TextView txt = (TextView) rootView.findViewById(R.id.txtJoin);
-        txt.setTypeface(MainActivity.handwritingFont);
-        txt = (TextView) rootView.findViewById(R.id.txtLobbyColor);
+        TextView txt = (TextView) rootView.findViewById(R.id.txtLobbyColor);
         txt.setTypeface(MainActivity.handwritingFont);
 
         mReadyButton = (Button) rootView.findViewById(R.id.btnJoinReady);

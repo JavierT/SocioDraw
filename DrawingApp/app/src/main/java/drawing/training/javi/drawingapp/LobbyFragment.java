@@ -46,8 +46,8 @@ public class LobbyFragment extends Fragment {
         mReadyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mCallback.startGame();
+                // True as parameter to say that it's the first round
+                mCallback.startGame(true);
             }
         });
 
@@ -127,7 +127,7 @@ public class LobbyFragment extends Fragment {
      * button has been clicked
      */
     public interface setStartGame {
-        public void startGame();
+        public void startGame(boolean isFirstRound);
     }
 
     /**

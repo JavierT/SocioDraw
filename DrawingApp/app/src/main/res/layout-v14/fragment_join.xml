@@ -9,167 +9,150 @@
     android:paddingLeft="20dp"
     android:paddingBottom="15dp">
 
+
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:gravity="left"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_marginBottom="10dp"
-        android:id="@+id/txtJoin"
-        android:text="@string/join"
-        android:layout_weight="1"
-        android:textStyle="bold" />
+        android:id="@+id/txtLobbyColor"
+        android:text="@string/lobby_color"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Top Row -->
+    <LinearLayout
+        android:id="@+id/paint_colors"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp">
+
+        <ImageButton
+            android:id="@+id/ibColor1"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="fill_parent"
+            android:layout_margin="5dp"
+            android:background="@color/black"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/black"/>
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/ibColor2"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/red"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/red" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/ibColor3"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/yellow"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/yellow" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/ibColor4"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/green"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/green" />
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:orientation="vertical"
-        android:layout_weight="1">
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp">
 
-        <TextView
-            android:layout_width="fill_parent"
+
+        <ImageButton
+            android:id="@+id/ibColor5"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/blue"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/blue" />
+
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="left"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/txtLobbyColor"
-            android:text="@string/lobby_color"
-            android:layout_marginBottom="10dp" />
+            android:layout_weight="1" />
 
-        <!-- Top Row -->
-        <LinearLayout
-            android:id="@+id/paint_colors"
-            android:layout_width="fill_parent"
+        <ImageButton
+            android:id="@+id/ibColor6"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/darkblue"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/darkblue" />
+
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="5dp"
-            android:orientation="horizontal"
-            android:layout_marginLeft="50dp"
-            android:layout_marginRight="50dp">
+            android:layout_weight="1" />
 
-            <ImageButton
-                android:id="@+id/ibColor1"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="fill_parent"
-                android:layout_margin="5dp"
-                android:background="@color/black"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/black"/>
+        <ImageButton
+            android:id="@+id/ibColor7"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/purple"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/purple" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor2"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/red"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/red" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor3"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/yellow"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/yellow" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor4"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/green"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/green" />
-
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
+        <Space
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="10dp"
-            android:orientation="horizontal"
-            android:layout_marginLeft="50dp"
-            android:layout_marginRight="50dp">
+            android:layout_weight="1" />
 
+        <ImageButton
+            android:id="@+id/ibColor8"
+            android:layout_width="@dimen/large_brush"
+            android:layout_height="@dimen/large_brush"
+            android:layout_margin="5dp"
+            android:background="@color/orange"
+            android:contentDescription="@string/paint"
+            android:src="@drawable/paint"
+            android:tag="@color/orange" />
 
-            <ImageButton
-                android:id="@+id/ibColor5"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/blue"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/blue" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor6"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/darkblue"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/darkblue" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor7"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/purple"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/purple" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/ibColor8"
-                android:layout_width="@dimen/large_brush"
-                android:layout_height="@dimen/large_brush"
-                android:layout_margin="5dp"
-                android:background="@color/orange"
-                android:contentDescription="@string/paint"
-                android:src="@drawable/paint"
-                android:tag="@color/orange" />
-
-        </LinearLayout>
     </LinearLayout>
 
 

@@ -90,12 +90,6 @@ public class ScreenView extends View {
         invalidate(); //invalidate view to repaint
     }
 
-    public Bitmap getBitmap()
-    {
-        return canvasBitmap;
-    }
-
-
     public void prepareToSave() {
         auxMat = new Matrix(mat);
         mat.setTranslate(0,0);
@@ -105,6 +99,14 @@ public class ScreenView extends View {
 
     public void restoreAfterSave() {
         mat.set(auxMat);
+        invalidate();
+    }
+
+    public void clearCanvas() {
+        drawPath.reset();
+        canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);
+        canvasBitmap.prepareToDraw();
+        drawCanvas.drawColor(Color.WHITE);
         invalidate();
     }
 }

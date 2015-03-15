@@ -41,22 +41,16 @@ public class ScreenFragment extends Fragment {
 
     public void savePicture()
     {
-//        tempDir = Environment.getExternalStorageDirectory() + "/" + getResources().getString(R.string.external_dir) + "/";
-//        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-//        File directory = cw.getDir(getResources().getString(R.string.external_dir), Context.MODE_PRIVATE);
-//
-//        prepareDirectory();
         String uniqueId = getTodaysDate() + "_" + getCurrentTime() + ".png";
 
         File f = new File(Environment.getExternalStorageDirectory(),
                 Constants.DRAWING_FOLDER);
-        if (!f.exists()) {
+        if (!f.exists()) //noinspection ResultOfMethodCallIgnored
             f.mkdirs();
-        }
 
         File file= new File(Environment.getExternalStorageDirectory()+ "/"+ Constants.DRAWING_FOLDER,uniqueId);
 
-        Bitmap mBitmap =  Bitmap.createBitmap (Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);;
+        Bitmap mBitmap =  Bitmap.createBitmap (Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);
 
         Canvas canvas = new Canvas(mBitmap);
         screenView.prepareToSave();
@@ -101,6 +95,7 @@ public class ScreenFragment extends Fragment {
     }
 
 
-
-
+    public void clearPicture() {
+        screenView.clearCanvas();
+    }
 }

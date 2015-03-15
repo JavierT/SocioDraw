@@ -8,7 +8,6 @@
     android:background="#32329e5f">
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical"
@@ -21,10 +20,28 @@
             android:gravity="right"
             android:layout_margin="10dp">
 
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/txtDrawiningCounter"/>
+                android:id="@+id/txtDrawiningCounter"
+                android:singleLine="true"
+                android:layout_gravity="center_vertical|right"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="75dp"
+                android:layout_height="fill_parent"
+                android:layout_marginLeft="20dp"
+                android:background="@mipmap/paper_style"
+                android:text="@string/continueBtn"
+                android:id="@+id/btnContinue"
+                android:visibility="gone"
+                android:textColor="#ff4681ff"
+                android:gravity="center" />
+
         </LinearLayout>
 
         <android.support.v4.view.ViewPager

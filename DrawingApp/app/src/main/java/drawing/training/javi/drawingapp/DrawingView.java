@@ -46,6 +46,7 @@ public class DrawingView extends View{
 
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
+    private float mOriginalScaleFactor = 0.0f;
 
     private boolean mPaintMode = true;
     private boolean mEraseMode = false;
@@ -55,6 +56,8 @@ public class DrawingView extends View{
     private Rect clipBounds;
     private int mActivePointerId;
     private int mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
+    private int mOldStrokeSize = Constants.STROKE_SIZE_MEDIUM;
+    private boolean mPaintAllowed = true;
 
 
     public DrawingView(Context context, AttributeSet attrs) {
@@ -102,19 +105,14 @@ public class DrawingView extends View{
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        //view given size
+
         super.onSizeChanged(w,h,oldw,oldh);
 
         mScaleFactor = (float)(w-10)/(float)Constants.WIDTH;
         mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-//
-//        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.ARGB_8888);
-//        drawCanvas = new Canvas(canvasBitmap);
-//        drawCanvas.drawColor(Color.WHITE);
-//        clipBounds = drawCanvas.getClipBounds();
-//        //Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
-//        //        + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
-//        //Log.d("DrawingApp. OnSize", "Drawingspace size: H:" + this.getWidth() + " H: " + this.getHeight()) ;
+        // Save the scale factor for next rounds
+        if(mOriginalScaleFactor==0.0f)
+            mOriginalScaleFactor = mScaleFactor;
     }
 
     @Override
@@ -122,12 +120,8 @@ public class DrawingView extends View{
         //draw view
         super.onDraw(canvas);
         canvas.save();
-        if(mEraseMode)
-            drawPaint.setStrokeWidth(Constants.STROKE_SIZE_ERASE);
-        else
-            drawPaint.setStrokeWidth(mStrokeSize);
+        drawPaint.setStrokeWidth(mStrokeSize);
         canvas.translate(mDriftingX, mDriftingY);
-
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
         canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
         canvas.drawPath(drawPath, drawPaint);
@@ -137,7 +131,11 @@ public class DrawingView extends View{
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
+        // If the painting is not allowed, we don't detect anything
+        if(!mPaintAllowed)
+            return true;
 
+        //Otherwise, we detect depending on the mode.
         if (mPaintMode) {
             detectPainting(event);
         }else {
@@ -213,22 +211,10 @@ public class DrawingView extends View{
     }
 
     private void detectPainting(MotionEvent event) {
-        //Log.d("DrawingApp. OnSize", "Touch: X:" + event.getX() + " Y: " + event.getY() + "ScaleFactor= " + mScaleFactor) ;
-        //Log.d("DrawingApp. OnSize", "CanvasSize: L:" + clipBounds.left + " R:" + clipBounds.right
-        //        + " Top:" + clipBounds.top + " Bottom:" + clipBounds.bottom);
-        //Log.d("DrawingApp. OnSize", "Drifting: X:" + mDriftingX + " Y: " + mDriftingY) ;
 
-
-//        float touchX = (event.getX() + clipBounds.left - mDriftingX) / mScaleFactor;
-//        float touchY = (event.getY() + clipBounds.top - mDriftingY) / mScaleFactor;
         float touchX = (event.getX() / mScaleFactor) + clipBounds.left;
         float touchY = (event.getY()/ mScaleFactor) + clipBounds.top;
-//        if(touchX <0.0f || touchX > (clipBounds.right-clipBounds.left))
-//            return;
-//        if(touchY<0.0f || touchY>(clipBounds.bottom-clipBounds.top))
-//            return;
-        //Log.d("DrawingApp. OnSize", "Final touch: X:" + touchX + " Y: " + touchY) ;
-        //Log.d("DrawingApp. OnSize", "-------------------------------------------------") ;
+
         if (event.getPointerCount() > 1) {
             return;
         }
@@ -249,7 +235,7 @@ public class DrawingView extends View{
                 drawPath.reset();
                 break;
             default:
-                return;
+                break;
         }
     }
 
@@ -264,7 +250,26 @@ public class DrawingView extends View{
     }
 
     public void setStrokeSize(int strokeSize) {
+        mOldStrokeSize = strokeSize;
         mStrokeSize = strokeSize;
+    }
+
+    public void clearCanvas() {
+        mPaintAllowed = false;
+        drawPath.reset();
+        mScaleFactor = mOriginalScaleFactor;
+        mDriftingX = 0.0f;
+        mDriftingY = 0.0f;
+        mMiddleScaleTouchX = 0.0f;
+        mMiddleScaleTouchY = 0.0f;
+        canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);
+        canvasBitmap.prepareToDraw();
+        drawCanvas.drawColor(Color.WHITE);
+        invalidate();
+    }
+
+    public void setPaintAllowed(boolean paintAllowed) {
+        this.mPaintAllowed = paintAllowed;
     }
 
     public interface sendPlayerPaint {
@@ -288,16 +293,23 @@ public class DrawingView extends View{
     }
 
     public void setPaintMode(boolean status) {
+        if(status)
+            mEraseMode = false;
         mPaintMode = status;
+        mOldStrokeSize = mStrokeSize;
     }
 
     public void setEraseMode(boolean status) {
         mEraseMode = status;
         if(mEraseMode) {
             drawPaint.setColor(Color.WHITE);
+            mOldStrokeSize = mStrokeSize;
+            mStrokeSize = Constants.STROKE_SIZE_ERASE;
         }
-        else
+        else {
             drawPaint.setColor(paintColor);
+            mStrokeSize = mOldStrokeSize;
+        }
 
     }
 

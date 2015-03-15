@@ -16,7 +16,9 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.alljoyn.bus.BusAttachment;
@@ -30,6 +32,7 @@ import org.alljoyn.bus.Status;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 //import org.alljoyn.bus.ProxyBusObject;
 
@@ -48,6 +51,10 @@ public class JoinActivity extends FragmentActivity
     private static final int MESSAGE_REQUEST_NEW_USERNAME = 5;
     private static final int MESSAGE_SET_NOT_READY = 6;
     private static final int MESSAGE_COLORS_UPDATE = 7;
+    private static final int MESSAGE_CLEAR_DRAWING = 8;
+    private static final int MESSAGE_ALLOW_DRAWING = 9;
+    private static final int  MESSAGE_UPDATE_DRAWING_COUNTER = 10;
+    private static final int  MESSAGE_TO_DRAWING_FRAGMENT = 11;
 
     private String mUsername;
     private static final String TAG = "DrawingClient";
@@ -63,6 +70,8 @@ public class JoinActivity extends FragmentActivity
     private boolean mPlayerReady = false;
     private int mColorSelected;
     private boolean mDrawingTime = false;
+
+
 
 
     private Handler mHandler = new Handler() {
@@ -95,6 +104,7 @@ public class JoinActivity extends FragmentActivity
                 case MESSAGE_SET_NOT_READY:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     mJoinFragment.setNotReady();
+                    break;
                 case MESSAGE_COLORS_UPDATE:
                     //ArrayList<String> ac = (ArrayList<String>) msg.obj;
                     if(mAvailableColors != null && mAvailableColors.size()>0) {
@@ -105,11 +115,26 @@ public class JoinActivity extends FragmentActivity
                         }
                         mJoinFragment.setAvailableColors(mAvailableColors);
                     }
+                    break;
+                case MESSAGE_CLEAR_DRAWING:
+                    mDrawingFragment.clearCanvas();
+                    break;
+                case MESSAGE_ALLOW_DRAWING:
+                    mDrawingFragment.allowDrawing((boolean) msg.obj);
+                    break;
+                case MESSAGE_UPDATE_DRAWING_COUNTER:
+                    mDrawingCounterView.setText((String) msg.obj);
+                    break;
+                case MESSAGE_TO_DRAWING_FRAGMENT:
+                    mTxtJoinTitle.setVisibility(View.GONE);
+                    break;
                 default:
                     break;
             }
         }
     };
+    private TextView mDrawingCounterView;
+    private TextView mTxtJoinTitle;
 
 
     /**
@@ -122,7 +147,7 @@ public class JoinActivity extends FragmentActivity
         // Set up the input
         final EditText input = new EditText(this);
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
         alert.setView(input);
         alert.setCancelable(false);
 
@@ -152,7 +177,7 @@ public class JoinActivity extends FragmentActivity
         if (savedInstanceState == null) {
             mJoinFragment = new JoinFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.joinContainer, mJoinFragment)
+                    .add(R.id.drawingContainer, mJoinFragment)
                     .commit();
         }
 
@@ -169,6 +194,14 @@ public class JoinActivity extends FragmentActivity
         mUsername = intent.getStringExtra(getString(R.string.username));
 
         mAvailableColors = new ArrayList<>();
+
+        mTxtJoinTitle = (TextView)findViewById(R.id.txtJoin);
+        mTxtJoinTitle.setTypeface(MainActivity.handwritingFont);
+
+        mDrawingCounterView = (TextView)findViewById(R.id.txtClientCounter);
+        mDrawingCounterView.setTypeface(MainActivity.handwritingFont);
+
+
     }
 
 
@@ -199,8 +232,10 @@ public class JoinActivity extends FragmentActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_DISCONNECT);
+        if (mBusHandler.isConnected())
+            mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_DISCONNECT);
+        else
+            mBusHandler.exitGame();
     }
 
     @Override
@@ -218,7 +253,7 @@ public class JoinActivity extends FragmentActivity
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (mBusHandler.isConnected())
-                            mBusHandler.sendEmptyMessage(mBusHandler.CLIENT_DISCONNECT);
+                            mBusHandler.sendEmptyMessage(ClientBusHandler.CLIENT_DISCONNECT);
                         else
                             mBusHandler.exitGame();
                     }
@@ -260,9 +295,10 @@ public class JoinActivity extends FragmentActivity
      * If the parameter is higher than 0, a timer it's set and when it finishes,
      * the drawing fragment is shown
      * Otherwise, the drawing fragment it's shown without timer
-     * @param countdown: time for the timer
+     * @param countdown : time for the timer
+     * @param firstTime: indicates if it is the first round.
      */
-    private void setTimerToStart(int countdown) {
+    private void setTimerToStart(int countdown, final boolean firstTime) {
         if(countdown>0) {
             final ProgressDialog progress = ProgressDialog.show(this, "Starting the game",
                     "in " + countdown + " seconds...", true);
@@ -274,11 +310,16 @@ public class JoinActivity extends FragmentActivity
 
                 public void onFinish() {
                     progress.dismiss();
-                    changeToDrawingFragment();
+                    if(firstTime)
+                        changeToDrawingFragment();
+                    initDrawingCounter();
+
                 }
             }.start();
         } else {
-            changeToDrawingFragment();
+            if(firstTime)
+                changeToDrawingFragment();
+            initDrawingCounter();
         }
     }
 
@@ -293,11 +334,13 @@ public class JoinActivity extends FragmentActivity
         mDrawingFragment.setArguments(args);
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.joinContainer, mDrawingFragment)
+                .replace(R.id.drawingContainer, mDrawingFragment)
                 .addToBackStack(null)
                 .commit();
+        mHandler.sendEmptyMessage(MESSAGE_TO_DRAWING_FRAGMENT);
 
-        mDrawingTime = true;
+
+        initDrawingCounter();
     }
 
     @Override
@@ -322,12 +365,52 @@ public class JoinActivity extends FragmentActivity
     }
 
 
+    /**
+     * This function sets up the counter for the drawing time. Once the time is done, it shows
+     * a toast and shows the Continue button that when is clicked the next round is prepared.
+     */
+    private void initDrawingCounter() {
+        // First allow drawing.
+        mDrawingTime = true;
+        mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ALLOW_DRAWING,true));
+
+        new CountDownTimer(Constants.drawingTimer*1000, 1000) {
+            int secondsRemaining = Constants.drawingTimer;
+            public void onTick(long millisUntilFinished) {
+                secondsRemaining--;
+                long minutes = TimeUnit.SECONDS.toMinutes(secondsRemaining);
+                long seconds = secondsRemaining - TimeUnit.MINUTES.toSeconds(minutes);
+                String counterString;
+                if(seconds < 10)
+                    counterString = "Time remaining "+ String.format("%d:0%d", minutes, seconds);
+
+                else
+                    counterString = "Time remaining "+ String.format("%d:%d", minutes, seconds);
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, counterString));
+            }
+
+            public void onFinish() {
+                //mSecondsRemaining to -1 to tell the client that the counter to the next round did
+                // not started yet.
+                if(mDrawingTime) {
+                    mDrawingTime = false;
+                    mPlayerReady = true;
+                    mBusHandler.sendMessage(mBusHandler.obtainMessage(ClientBusHandler.CLIENT_WAITING, false));
+                }
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up!"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time remaining 0:00"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ALLOW_DRAWING,false));
+            }
+        }.start();
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                      //
     // BusHandler class that will handle all Alljoyn calls.                                 //
     //                                                                                      //
     //////////////////////////////////////////////////////////////////////////////////////////
     class ClientBusHandler extends Handler {
+
 
         private BusAttachment mBus;
         private ProxyBusObject mProxyObj;
@@ -469,12 +552,12 @@ public class JoinActivity extends FragmentActivity
                         mHandler.sendEmptyMessage(MESSAGE_STOP_PROGRESS_DIALOG);
 
 
-                        status = mBus.registerSignalHandlers(this);
-                        if (status != Status.OK) {
-                            logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
-                            //sendMessage(obtainMessage(CLIENT_DISCONNECT));
-                            //return;
-                        }
+//                        status = mBus.registerSignalHandlers(this);
+//                        if (status != Status.OK) {
+//                            logStatus("JoinActivity.registerSignalHandlers() can't register to signals", Status.BUS_ERRORS);
+//                            //sendMessage(obtainMessage(CLIENT_DISCONNECT));
+//                            //return;
+//                        }
 
                         try {
                             if (!mDrawingInterface.newPlayerConnected(mUsername)) {
@@ -511,7 +594,7 @@ public class JoinActivity extends FragmentActivity
                         mDrawingInterface.setDisconnect(mUsername);
                     } catch (BusException e) {
                         logException("DrawingInterface.disconnect()", e);
-                        sendUiMessage(MESSAGE_POST_TOAST,"Can't disconnect");
+                        //sendUiMessage(MESSAGE_POST_TOAST,"Can't disconnect");
                         return;
                     }
                     if (mIsConnected) {
@@ -554,7 +637,7 @@ public class JoinActivity extends FragmentActivity
                     }
                     if(mPlayerReady) {
                         // As the signals are not working, we go to waiting state.
-                        sendEmptyMessage(CLIENT_WAITING);
+                        sendMessage(obtainMessage(CLIENT_WAITING, true));
                      }
 
                     break;
@@ -564,6 +647,7 @@ public class JoinActivity extends FragmentActivity
                     // If our status changed we are not longer in this state.
                     if(!mPlayerReady)
                         break;
+                    boolean firstTime = (boolean)msg.obj;
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
@@ -571,31 +655,41 @@ public class JoinActivity extends FragmentActivity
                     }
                     try {
                         int countdown = mDrawingInterface.getLobbyStatus();
-                        if(countdown > 0)
-                            setTimerToStart(countdown);
-
+                        if(countdown > 0) {
+                            setTimerToStart(countdown, firstTime);
+                            // Clear the drawing if it is not the first time for the next
+                            // round. We clean after the timer for the next game is been
+                            // set up.
+                            if (!firstTime)
+                                sendUiMessage(MESSAGE_CLEAR_DRAWING);
+                        }
                         else {
                             // Keep waiting if this player is ready but not the others
-                            sendEmptyMessage(CLIENT_WAITING);
+                            sendMessage(obtainMessage(CLIENT_WAITING, firstTime));
                         }
                     } catch (BusException e) {
                         logException("DrawingInterface.getLobbyStatus()", e);
-                        sendUiMessage(MESSAGE_POST_TOAST, "Status can't be retreived");
+                        sendUiMessage(MESSAGE_POST_TOAST, "Game is over. Thanks for playing");
+                        exitGame();
+
                     }
                     break;
                 }
 
                 case CLIENT_SEND_POINT: {
                     try {
+                        if(!mDrawingTime) {
+                            break;
+                        }
                         DrawingPath param = (DrawingPath)msg.obj;
                         if(!mDrawingInterface.sendPoint(param))
                         {
                             // If returns false, the time to draw is over.
                             // We only show a toast once.
-                            if(mDrawingTime) {
-                                sendUiMessage(MESSAGE_POST_TOAST, "Time is up!");
-                            }
                             mDrawingTime = false;
+                            mPlayerReady = true;
+                            sendUiMessage(MESSAGE_POST_TOAST, "Time is up!");
+                            sendMessage(obtainMessage(CLIENT_WAITING, false));
                         }
 
                     } catch (BusException e) {
