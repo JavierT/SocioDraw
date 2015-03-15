@@ -4,7 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:id="@+id/drawingContainer"
-    tools:context="drawing.training.javi.drawingapp.JoinActivity"
+    tools:context="com.sociotech.javiert.imaginary.JoinActivity"
     android:background="#32329e5f">
 
     <LinearLayout

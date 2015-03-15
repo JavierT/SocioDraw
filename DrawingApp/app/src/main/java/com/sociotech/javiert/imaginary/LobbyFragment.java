@@ -1,4 +1,4 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
 
 import android.app.Activity;
@@ -42,7 +42,6 @@ public class LobbyFragment extends Fragment {
         mReadyButton = (Button) rootView.findViewById(R.id.btnLobbyStart);
         mReadyButton.setTypeface(MainActivity.handwritingFont);
         mReadyButton.setTextColor(Color.RED);
-        mReadyButton.setClickable(false);
         mReadyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,7 +49,7 @@ public class LobbyFragment extends Fragment {
                 mCallback.startGame(true);
             }
         });
-
+        mReadyButton.setClickable(false);
 
         mListView = (ListView) rootView.findViewById(R.id.lvPlayers);
 

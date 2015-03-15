@@ -15,7 +15,7 @@
         <!--android:layout_height="fill_parent"-->
         <!-->-->
 
-        <drawing.training.javi.drawingapp.DrawingView
+        <com.sociotech.javiert.imaginary.DrawingView
             android:id="@+id/drawing"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"

@@ -1,5 +1,6 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,13 @@ public class DrawingFragment extends Fragment {
 
     private int mStrokeSize;
 
+    private ImageButton mPaintButton;
+    private ImageButton mHandButton;
+    private ImageButton mEraserButton;
+    private ImageButton mStrokeButton;
+
+    private int paint;
+
     public DrawingFragment() {
         setHasOptionsMenu(true);
     }
@@ -23,7 +31,7 @@ public class DrawingFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_drawing, container, false);
         Bundle args = getArguments();
-        int paint = args.getInt(Constants.ARGS_PAINT, 0xFF660000);
+        paint = args.getInt(Constants.ARGS_PAINT, 0xFF660000);
         int sizeWidth = args.getInt(Constants.ARGS_SCREEN_WIDTH,Constants.WIDTH);
         int sizeHeight = args.getInt(Constants.ARGS_SCREEN_HEIGHT, Constants.HEIGHT);
         //int paint = 0xFF660000;
@@ -35,35 +43,49 @@ public class DrawingFragment extends Fragment {
 
         mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
 
-        final ImageButton mPaintButton = (ImageButton) rootView.findViewById(R.id.btnPaint);
+        mPaintButton = (ImageButton) rootView.findViewById(R.id.btnPaint);
+        mHandButton = (ImageButton) rootView.findViewById(R.id.btnHand);
+        mEraserButton = (ImageButton) rootView.findViewById(R.id.btnEraser);
+        mStrokeButton = (ImageButton) rootView.findViewById(R.id.btnStroke);
+
         mPaintButton.setBackgroundColor(paint);
         mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 drawView.setEraseMode(false);
                 drawView.setPaintMode(true);
+                mPaintButton.setBackgroundColor(paint);
+                mHandButton.setBackgroundResource(R.mipmap.ic_hand);
+                mEraserButton.setBackgroundResource(R.mipmap.ic_eraser);
             }
         });
 
-        final ImageButton mHandButton = (ImageButton) rootView.findViewById(R.id.btnHand);
+
         mHandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 drawView.setPaintMode(false);
+
+                v.setBackgroundResource(R.mipmap.ic_hand_pressed);
+                mPaintButton.setBackgroundColor(Color.TRANSPARENT);
+                mEraserButton.setBackgroundResource(R.mipmap.ic_eraser);
             }
         });
 
-        final ImageButton mEraserButton = (ImageButton) rootView.findViewById(R.id.btnEraser);
+
         //mEraserButton.setImageDrawable(getResources().getDrawable(R.drawable.icons_status));
         mEraserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 drawView.setPaintMode(true);
                 drawView.setEraseMode(true);
+                v.setBackgroundResource(R.mipmap.ic_eraser_pressed);
+                mPaintButton.setBackgroundColor(Color.TRANSPARENT);
+                mHandButton.setBackgroundResource(R.mipmap.ic_hand);
             }
         });
 
-        final ImageButton mStrokeButton = (ImageButton) rootView.findViewById(R.id.btnStroke);
+
         //mEraserButton.setImageDrawable(getResources().getDrawable(R.drawable.icons_status));
         mStrokeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +106,7 @@ public class DrawingFragment extends Fragment {
                     default: break;
                 }
                 drawView.setStrokeSize(mStrokeSize);
+                mStrokeButton.setBackgroundColor(Color.TRANSPARENT);
             }
         });
 

@@ -1,4 +1,4 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
 import android.content.Context;
 import android.content.Intent;

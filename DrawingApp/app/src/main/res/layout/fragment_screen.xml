@@ -17,7 +17,7 @@
         android:contentDescription="@string/arrow_descriptor"
         android:layout_gravity="center_vertical" />
 
-    <drawing.training.javi.drawingapp.ScreenView
+    <com.sociotech.javiert.imaginary.ScreenView
         android:id="@+id/screen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

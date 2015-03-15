@@ -1,4 +1,4 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -34,6 +34,7 @@ public class DrawingView extends View{
 
     private float mDriftingX;
     private float mDriftingY;
+    private float mOriginalDriftingY;
 
     private float mLastPaintTouchX;
     private float mLastPaintTouchY;
@@ -108,8 +109,10 @@ public class DrawingView extends View{
 
         super.onSizeChanged(w,h,oldw,oldh);
 
-        mScaleFactor = (float)(w-10)/(float)Constants.WIDTH;
+        mScaleFactor = (float)(w-5)/(float)Constants.WIDTH;
         mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+        mDriftingY = h - Constants.HEIGHT*mScaleFactor;
+        mOriginalDriftingY = mDriftingY;
         // Save the scale factor for next rounds
         if(mOriginalScaleFactor==0.0f)
             mOriginalScaleFactor = mScaleFactor;
@@ -131,12 +134,10 @@ public class DrawingView extends View{
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
-        // If the painting is not allowed, we don't detect anything
-        if(!mPaintAllowed)
-            return true;
+        // If the painting is not allowed, we don't allow painting
 
         //Otherwise, we detect depending on the mode.
-        if (mPaintMode) {
+        if (mPaintMode && mPaintAllowed) {
             detectPainting(event);
         }else {
             detectMovement(event);
@@ -259,7 +260,7 @@ public class DrawingView extends View{
         drawPath.reset();
         mScaleFactor = mOriginalScaleFactor;
         mDriftingX = 0.0f;
-        mDriftingY = 0.0f;
+        mDriftingY = mOriginalDriftingY;
         mMiddleScaleTouchX = 0.0f;
         mMiddleScaleTouchY = 0.0f;
         canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);

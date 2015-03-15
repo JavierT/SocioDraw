@@ -1,4 +1,4 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
 /**
  * Drawing App created by Javier Tresaco on 2/03/15.
@@ -23,6 +23,6 @@ public abstract class Constants {
     public static final int SCREEN_ID = 1;
 
 
-    public static final int drawingTimer = 20;
+    public static final int drawingTimer = 180;
     public static final String DRAWING_FOLDER = "Imaginary";
 }

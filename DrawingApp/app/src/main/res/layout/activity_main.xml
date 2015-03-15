@@ -4,7 +4,7 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/container"
-        tools:context="drawing.training.javi.drawingapp.MainActivity">
+        tools:context="com.sociotech.javiert.imaginary.MainActivity">
 
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package drawing.training.javi.drawingapp;
+package com.sociotech.javiert.imaginary;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -30,10 +30,16 @@ public class Pictures {
 
     public int getRandomPicture()
     {
-        int n = r.nextInt(picturesList.size()-1);
-        int pic = picturesList.get(n);
-        picturesList.remove(n);
-        return pic;
+        if(picturesList.size()==1) {
+            int pic = picturesList.get(0);
+            reset();
+            return pic;
+        } else {
+            int n = r.nextInt(picturesList.size() - 1);
+            int pic = picturesList.get(n);
+            picturesList.remove(n);
+            return pic;
+        }
     }
 
     public void reset() {
