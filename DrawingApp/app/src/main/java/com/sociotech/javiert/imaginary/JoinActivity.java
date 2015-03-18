@@ -45,11 +45,12 @@ public class JoinActivity extends FragmentActivity
         System.loadLibrary("alljoyn_java");
     }
 
-    private static final int MESSAGE_POST_TOAST = 2;
-    private static final int MESSAGE_START_PROGRESS_DIALOG = 3;
-    private static final int MESSAGE_STOP_PROGRESS_DIALOG = 4;
-    private static final int MESSAGE_REQUEST_NEW_USERNAME = 5;
-    private static final int MESSAGE_SET_NOT_READY = 6;
+    private static final int MESSAGE_POST_TOAST = 1;
+    private static final int MESSAGE_START_PROGRESS_DIALOG = 2;
+    private static final int MESSAGE_STOP_PROGRESS_DIALOG = 3;
+    private static final int MESSAGE_REQUEST_NEW_USERNAME = 4;
+    private static final int MESSAGE_SET_NOT_READY = 5;
+    private static final int MESSAGE_COLOR_SELECTED = 6;
     private static final int MESSAGE_COLORS_UPDATE = 7;
     private static final int MESSAGE_CLEAR_DRAWING = 8;
     private static final int MESSAGE_ALLOW_DRAWING = 9;
@@ -104,6 +105,9 @@ public class JoinActivity extends FragmentActivity
                 case MESSAGE_SET_NOT_READY:
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show();
                     mJoinFragment.setNotReady();
+                    break;
+                case MESSAGE_COLOR_SELECTED:
+                    mJoinFragment.setSelectionCorrect((String) msg.obj);
                     break;
                 case MESSAGE_COLORS_UPDATE:
                     //ArrayList<String> ac = (ArrayList<String>) msg.obj;
@@ -615,11 +619,14 @@ public class JoinActivity extends FragmentActivity
                         else
                         {
                             mAvailableColors = new ArrayList<>(Arrays.asList(colors));
-                            mHandler.sendEmptyMessage(MESSAGE_COLORS_UPDATE);
+                            sendUiMessage(MESSAGE_COLOR_SELECTED, param);
+                            sendUiMessage(MESSAGE_COLORS_UPDATE);
+
                         }
                     } catch (BusException e) {
                         logException("DrawingInterface.setPlayerColor()", e);
                         sendUiMessage(MESSAGE_POST_TOAST, "Color can't be sent");
+                        sendUiMessage(MESSAGE_COLORS_UPDATE);
                         return;
                     }
                     break;

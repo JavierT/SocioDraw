@@ -55,6 +55,7 @@
             android:src="@drawable/paint"
             android:tag="@color/red" />
 
+
         <Space
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,21 +63,6 @@
 
         <ImageButton
             android:id="@+id/ibColor3"
-            android:layout_width="@dimen/large_brush"
-            android:layout_height="@dimen/large_brush"
-            android:layout_margin="5dp"
-            android:background="@color/yellow"
-            android:contentDescription="@string/paint"
-            android:src="@drawable/paint"
-            android:tag="@color/yellow" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/ibColor4"
             android:layout_width="@dimen/large_brush"
             android:layout_height="@dimen/large_brush"
             android:layout_margin="5dp"
@@ -99,7 +85,7 @@
 
 
         <ImageButton
-            android:id="@+id/ibColor5"
+            android:id="@+id/ibColor4"
             android:layout_width="@dimen/large_brush"
             android:layout_height="@dimen/large_brush"
             android:layout_margin="5dp"
@@ -108,20 +94,6 @@
             android:src="@drawable/paint"
             android:tag="@color/blue" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/ibColor6"
-            android:layout_width="@dimen/large_brush"
-            android:layout_height="@dimen/large_brush"
-            android:layout_margin="5dp"
-            android:background="@color/darkblue"
-            android:contentDescription="@string/paint"
-            android:src="@drawable/paint"
-            android:tag="@color/darkblue" />
 
         <Space
             android:layout_width="wrap_content"
@@ -129,7 +101,7 @@
             android:layout_weight="1" />
 
         <ImageButton
-            android:id="@+id/ibColor7"
+            android:id="@+id/ibColor5"
             android:layout_width="@dimen/large_brush"
             android:layout_height="@dimen/large_brush"
             android:layout_margin="5dp"
@@ -144,7 +116,7 @@
             android:layout_weight="1" />
 
         <ImageButton
-            android:id="@+id/ibColor8"
+            android:id="@+id/ibColor6"
             android:layout_width="@dimen/large_brush"
             android:layout_height="@dimen/large_brush"
             android:layout_margin="5dp"

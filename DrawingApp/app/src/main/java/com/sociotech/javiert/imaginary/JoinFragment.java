@@ -27,6 +27,8 @@ public class JoinFragment extends Fragment {
     private setPlayerColor mCallbackColor;
     private setPlayerReady mCallbackReady;
 
+    private boolean mSendingColor = false;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,7 +81,6 @@ public class JoinFragment extends Fragment {
         ids.add(R.id.ibColor1);ids.add(R.id.ibColor2);
         ids.add(R.id.ibColor3);ids.add(R.id.ibColor4);
         ids.add(R.id.ibColor5);ids.add(R.id.ibColor6);
-        ids.add(R.id.ibColor7);ids.add(R.id.ibColor8);
 
         mColors = new ArrayList<>();
         for(Integer i : ids) {
@@ -109,16 +110,32 @@ public class JoinFragment extends Fragment {
     }
 
     private void paintClicked(View view) {
-        if(view!= mCurrPaint && !mReadyState) {
-            ImageButton imgView = (ImageButton)view;
+        if(view!= mCurrPaint && !mReadyState && !mSendingColor) {
+            mSendingColor = true;
             String color = view.getTag().toString();
 
-            imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
-            if(mCurrPaint!= null) //If there is one already selected
-                mCurrPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
-            mCurrPaint =(ImageButton)view;
             mCallbackColor.setColor(color);
         }
+    }
+
+    public void setSelectionCorrect(String color)
+    {
+        ImageButton imgBtn = findImageButton(color);
+        if(imgBtn == null)
+            return;
+        imgBtn.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
+        if(mCurrPaint!= null) //If there is one already selected
+            mCurrPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
+        mCurrPaint =imgBtn;
+    }
+
+    private ImageButton findImageButton(String color) {
+        for(ImageButton ib: mColors) {
+
+            if(ib.getTag().toString().equals(color))
+                    return ib;
+        }
+        return mCurrPaint;
     }
 
     public void setNotReady() {
@@ -126,7 +143,10 @@ public class JoinFragment extends Fragment {
         mReadyButton.setText(getString(R.string.join_Ready));
         mReadyButton.setTextColor(Color.GREEN);
         for(ImageButton ib: mColors) {
+            if(ib.isEnabled())
                 ib.getBackground().setAlpha(255);
+            else
+                ib.getBackground().setAlpha(30);
         }
     }
 
@@ -150,13 +170,18 @@ public class JoinFragment extends Fragment {
     public void setAvailableColors(ArrayList<String> colors) {
         for(ImageButton ib: mColors) {
 
-            if(!colors.contains(ib.getTag().toString().toUpperCase())
-                    && ib!=mCurrPaint)
+            if(ib!=mCurrPaint && !colors.contains(ib.getTag().toString().toUpperCase()))
             {
                 ib.setClickable(false);
                 ib.getBackground().setAlpha(30);
             }
+            else{
+                ib.setClickable(true);
+                ib.getBackground().setAlpha(255);
+            }
+
         }
+        mSendingColor = false;
     }
 
     public interface setPlayerReady {

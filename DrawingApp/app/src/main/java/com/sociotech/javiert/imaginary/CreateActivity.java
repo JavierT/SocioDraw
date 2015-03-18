@@ -160,8 +160,6 @@ public class CreateActivity extends FragmentActivity
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.black))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.blue))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.red))),false);
-        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.yellow))),false);
-        mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.darkblue))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.orange))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.green))),false);
