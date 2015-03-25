@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -164,7 +165,7 @@ public class CreateActivity extends FragmentActivity
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.green))),false);
 
-        mPatternPictures = new Pictures();
+        mPatternPictures = new Pictures(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
     }
 
 
@@ -252,8 +253,9 @@ public class CreateActivity extends FragmentActivity
      */
     public void startGame(final boolean isFirstRound) {
         myProgressDialog = new ProgressDialog(this);
+        myProgressDialog.setCancelable(false);
         if(isFirstRound) {
-            myProgressDialog.setTitle("Starting the gam");
+            myProgressDialog.setTitle("Starting the game");
             // Number of rounds (pictures) that is gonna be is the number of players connected + server player
             roundsRemaining = mCurrentPlayers.size()+1;
         }
@@ -331,9 +333,9 @@ public class CreateActivity extends FragmentActivity
      * a toast and shows the Continue button that when is clicked the next round is prepared.
      */
     private void initDrawingCounter() {
-        mSecondsRemaining = Constants.drawingTimer;
+        mSecondsRemaining = Constants.DRAWING_TIME;
         mDrawingStatus = true;
-        new CountDownTimer(Constants.drawingTimer*1000, 1000) {
+        new CountDownTimer(Constants.DRAWING_TIME *1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 mSecondsRemaining--;

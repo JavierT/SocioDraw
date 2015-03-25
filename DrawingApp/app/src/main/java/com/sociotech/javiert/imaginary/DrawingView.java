@@ -223,22 +223,51 @@ public class DrawingView extends View{
         if (event.getPointerCount() > 1) {
             return;
         }
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
+        final int action = event.getAction();
+        switch (action & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN: {
                 drawPath.moveTo(touchX, touchY);
                 mLastPaintTouchX = touchX;
                 mLastPaintTouchY = touchY;
+                mActivePointerId = event.getPointerId(0);
                 break;
-            case MotionEvent.ACTION_MOVE:
+            }
+            case MotionEvent.ACTION_MOVE: {
+                final int pointerIndex = event.findPointerIndex(mActivePointerId);
+                Log.d("Imaginary - Painting", "pointerIndex is:" + pointerIndex);
+                if (pointerIndex == -1)
+                    break;
+                touchX = (event.getX(mActivePointerId) / mScaleFactor) + clipBounds.left;
+                touchY = (event.getY(mActivePointerId) / mScaleFactor) + clipBounds.top;
                 drawPath.lineTo(touchX, touchY);
                 mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY, mStrokeSize/*Math.round(12/mScaleFactor)*/, mEraseMode);
                 mLastPaintTouchX = touchX;
                 mLastPaintTouchY = touchY;
                 break;
-            case MotionEvent.ACTION_UP:
+            }
+            case MotionEvent.ACTION_UP: {
                 drawCanvas.drawPath(drawPath, drawPaint);
                 drawPath.reset();
+                mActivePointerId = -1;
                 break;
+            }
+            case MotionEvent.ACTION_CANCEL: {
+                mActivePointerId = -1;
+                break;
+            }
+            case MotionEvent.ACTION_POINTER_UP: {
+                final int pointerIndex = (event.getAction() & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                final int pointerId = event.getPointerId(pointerIndex);
+                if (pointerId == mActivePointerId) {
+                    // This was our active pointer going up. Choose a new
+                    // active pointer and adjust accordingly.
+                    final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                    mLastPaintTouchX = event.getX(newPointerIndex);
+                    mLastPaintTouchY = event.getY(newPointerIndex);
+                    mActivePointerId = event.getPointerId(newPointerIndex);
+                }
+                break;
+            }
             default:
                 break;
         }

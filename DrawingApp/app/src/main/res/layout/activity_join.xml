@@ -11,10 +11,12 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="right">
+        android:gravity="right"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
 
         <TextView
-            android:layout_width="fill_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_gravity="left|center"
@@ -25,15 +27,14 @@
             android:textStyle="bold"
             android:layout_marginTop="5dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/txtClientCounter"
-            android:singleLine="true"
-            android:layout_gravity="center_vertical|right"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp" />
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="30dp"
+            android:id="@+id/ic_timeout"
+            android:layout_gravity="right"
+            android:src="@drawable/ic_clock1" />
 
 
     </LinearLayout>
+
 </LinearLayout>

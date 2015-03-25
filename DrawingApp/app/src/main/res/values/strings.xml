@@ -24,8 +24,8 @@
     <string name="lobby_color">Please, select a color:</string>
     <string name="lobby_player">Players:</string>
     <string name="lobby_exit">Exit</string>
-    <string name="join_Ready">Ready</string>
-    <string name="join_NotReady">Not Ready</string>
+    <string name="join_Ready">Click here once you are ready</string>
+    <string name="join_NotReady">Wait!, I want to change my color</string>
     <string name="lobby_Start">Start Game</string>
     <string name="join">You have joined the game</string>
 
@@ -43,5 +43,6 @@
     <string name="gameOverDesc">Do you want to play again?</string>
     <string name="exit">Exit</string>
     <string name="playAgain">Play again</string>
+    <string name="used_pictures">UsedPictures</string>
 
 </resources>

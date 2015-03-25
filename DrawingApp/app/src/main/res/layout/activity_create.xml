@@ -18,7 +18,10 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="right"
-            android:layout_margin="10dp">
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
 
 
             <TextView
@@ -27,13 +30,13 @@
                 android:id="@+id/txtDrawiningCounter"
                 android:singleLine="true"
                 android:layout_gravity="center_vertical|right"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp" />
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp" />
 
             <Button
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="75dp"
-                android:layout_height="fill_parent"
+                android:layout_height="40dp"
                 android:layout_marginLeft="20dp"
                 android:background="@mipmap/paper_style"
                 android:text="@string/continueBtn"

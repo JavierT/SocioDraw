@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +33,6 @@ import org.alljoyn.bus.Status;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 //import org.alljoyn.bus.ProxyBusObject;
 
@@ -127,7 +127,7 @@ public class JoinActivity extends FragmentActivity
                     mDrawingFragment.allowDrawing((boolean) msg.obj);
                     break;
                 case MESSAGE_UPDATE_DRAWING_COUNTER:
-                    mDrawingCounterView.setText((String) msg.obj);
+                    setTimeoutIcon((Integer) msg.obj);
                     break;
                 case MESSAGE_TO_DRAWING_FRAGMENT:
                     mTxtJoinTitle.setVisibility(View.GONE);
@@ -137,7 +137,8 @@ public class JoinActivity extends FragmentActivity
             }
         }
     };
-    private TextView mDrawingCounterView;
+
+    private ImageView mDrawingCounterView;
     private TextView mTxtJoinTitle;
 
 
@@ -173,6 +174,41 @@ public class JoinActivity extends FragmentActivity
     }
 
 
+    private void setTimeoutIcon(Integer seconds) {
+        if(seconds == 0) {
+            mDrawingCounterView.setImageResource(R.drawable.ic_clock9);
+            return;
+        }
+        int steps =Constants.DRAWING_TIME / 7;
+        switch (seconds / steps) {
+            case 0:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock8);
+                break;
+            case 1:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock7);
+                break;
+            case 2:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock6);
+                break;
+            case 3:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock5);
+                break;
+            case 4:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock4);
+                break;
+            case 5:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock3);
+                break;
+            case 6:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock2);
+                break;
+            default:
+                mDrawingCounterView.setImageResource(R.drawable.ic_clock1);
+        }
+    }
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -202,8 +238,7 @@ public class JoinActivity extends FragmentActivity
         mTxtJoinTitle = (TextView)findViewById(R.id.txtJoin);
         mTxtJoinTitle.setTypeface(MainActivity.handwritingFont);
 
-        mDrawingCounterView = (TextView)findViewById(R.id.txtClientCounter);
-        mDrawingCounterView.setTypeface(MainActivity.handwritingFont);
+        mDrawingCounterView = (ImageView)findViewById(R.id.ic_timeout);
 
 
     }
@@ -378,19 +413,11 @@ public class JoinActivity extends FragmentActivity
         mDrawingTime = true;
         mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ALLOW_DRAWING,true));
 
-        new CountDownTimer(Constants.drawingTimer*1000, 1000) {
-            int secondsRemaining = Constants.drawingTimer;
+        new CountDownTimer(Constants.DRAWING_TIME *1000, 1000) {
+            int secondsRemaining = Constants.DRAWING_TIME;
             public void onTick(long millisUntilFinished) {
                 secondsRemaining--;
-                long minutes = TimeUnit.SECONDS.toMinutes(secondsRemaining);
-                long seconds = secondsRemaining - TimeUnit.MINUTES.toSeconds(minutes);
-                String counterString;
-                if(seconds < 10)
-                    counterString = "Time remaining "+ String.format("%d:0%d", minutes, seconds);
-
-                else
-                    counterString = "Time remaining "+ String.format("%d:%d", minutes, seconds);
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, counterString));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, secondsRemaining));
             }
 
             public void onFinish() {
@@ -402,7 +429,7 @@ public class JoinActivity extends FragmentActivity
                     mBusHandler.sendMessage(mBusHandler.obtainMessage(ClientBusHandler.CLIENT_WAITING, false));
                 }
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up!"));
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time remaining 0:00"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER,0));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ALLOW_DRAWING,false));
             }
         }.start();

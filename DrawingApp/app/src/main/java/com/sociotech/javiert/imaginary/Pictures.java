@@ -1,5 +1,10 @@
 package com.sociotech.javiert.imaginary;
 
+import android.content.SharedPreferences;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -12,8 +17,14 @@ public class Pictures {
 
     static private ArrayList<Integer> picturesList;
     static private Random r;
+    private final SharedPreferences sharedPref;
+    private final SharedPreferences.Editor editor;
+    private final ArrayList<String> usedPictures;
 
-    public Pictures() {
+    public Pictures(SharedPreferences preferences) {
+        sharedPref = preferences;
+        editor = sharedPref.edit();
+
         r = new Random();
         picturesList = new ArrayList<>();
         picturesList.add(R.drawable.picture1);
@@ -26,6 +37,16 @@ public class Pictures {
         picturesList.add(R.drawable.picture8);
         picturesList.add(R.drawable.picture9);
         picturesList.add(R.drawable.picture10);
+
+        usedPictures = getStringArrayPref(Constants.USED_PICTURES_KEY);
+        if(usedPictures != null && !usedPictures.isEmpty()) {
+            for(String pic: usedPictures) {
+                Integer picName = Integer.parseInt(pic);
+                if(picturesList.contains(picName))
+                    picturesList.remove(picName);
+
+            }
+        }
     }
 
     public int getRandomPicture()
@@ -36,8 +57,10 @@ public class Pictures {
             return pic;
         } else {
             int n = r.nextInt(picturesList.size() - 1);
-            int pic = picturesList.get(n);
+            Integer pic = picturesList.get(n);
             picturesList.remove(n);
+            usedPictures.add(String.valueOf(pic));
+            setStringArrayPref(Constants.USED_PICTURES_KEY,usedPictures);
             return pic;
         }
     }
@@ -58,9 +81,44 @@ public class Pictures {
         picturesList.add(R.drawable.picture9);
         picturesList.add(R.drawable.picture10);
 
+        usedPictures.clear();
+        setStringArrayPref(Constants.USED_PICTURES_KEY, usedPictures);
     }
 
     public boolean isEmpty() {
         return picturesList.size() == 0;
+    }
+
+
+
+    //******************** SHAREDPREFERENCES CODE TO SOLVE SETSTRINGSET BUG ****************
+    public void setStringArrayPref(String key, ArrayList<String> values) {
+        JSONArray a = new JSONArray();
+        for (int i = 0; i < values.size(); i++) {
+            a.put(values.get(i));
+        }
+        if (!values.isEmpty()) {
+            editor.putString(key, a.toString());
+        } else {
+            editor.putString(key, null);
+        }
+        editor.commit();
+    }
+
+    public ArrayList<String> getStringArrayPref(String key) {
+        String json = sharedPref.getString(key, null);
+        ArrayList<String> urls = new ArrayList<>();
+        if (json != null) {
+            try {
+                JSONArray a = new JSONArray(json);
+                for (int i = 0; i < a.length(); i++) {
+                    String url = a.optString(i);
+                    urls.add(url);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return urls;
     }
 }
