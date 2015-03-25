@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -165,6 +166,9 @@ public class DrawingView extends View{
 
             case MotionEvent.ACTION_MOVE: {
                 final int pointerIndex = event.findPointerIndex(mActivePointerId);
+                Log.d("Imaginary - Movement", "pointerIndex is:" + pointerIndex);
+                if(pointerIndex == -1)
+                    break;
                 touchX = event.getX(pointerIndex);
                 touchY = event.getY(pointerIndex);
 
@@ -301,6 +305,8 @@ public class DrawingView extends View{
     }
 
     public void setEraseMode(boolean status) {
+        if(mEraseMode == status) // If we are already in this mode, we don't do anything.
+            return;
         mEraseMode = status;
         if(mEraseMode) {
             drawPaint.setColor(Color.WHITE);
