@@ -4,9 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.AttributeSet;
@@ -60,6 +62,9 @@ public class DrawingView extends View{
     private int mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
     private int mOldStrokeSize = Constants.STROKE_SIZE_MEDIUM;
     private boolean mPaintAllowed = true;
+    private Rect rect;
+    private RectF rectF ;
+    Paint paintStroke;
 
 
     public DrawingView(Context context, AttributeSet attrs) {
@@ -88,6 +93,12 @@ public class DrawingView extends View{
         drawCanvas = new Canvas(canvasBitmap);
         clipBounds = drawCanvas.getClipBounds();
 
+        paintStroke = new Paint();
+
+        paintStroke.setStrokeWidth(2);
+        paintStroke.setStyle(Paint.Style.STROKE);
+        paintStroke.setColor(Color.RED);
+        paintStroke.setAntiAlias(true);
 
     }
 
@@ -98,10 +109,28 @@ public class DrawingView extends View{
 
     public void setSize(int w, int h) {
         canvasBitmap.recycle();
+
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565 );
+
+
+        rect = new Rect(0, 0, w, h);
+        rectF = new RectF(rect);
+
+
         drawCanvas = new Canvas(canvasBitmap);
         drawCanvas.drawColor(Color.WHITE);
         clipBounds = drawCanvas.getClipBounds();
+
+        drawCanvas.drawRect(rectF, paintStroke);
+
+        Paint fgPaintSel = new Paint();
+        fgPaintSel.setARGB(255, 0, 0,0);
+        fgPaintSel.setStyle(Paint.Style.STROKE);
+        fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+        drawCanvas.drawLine(w/3, 0, w/3, h, fgPaintSel);
+        drawCanvas.drawLine(2*w/3, 0, 2*w/3, h, fgPaintSel);
+        drawCanvas.drawLine(0, 2*h/3, w, 2*h/3, fgPaintSel);
+        drawCanvas.drawLine(0, h/3, w, h/3, fgPaintSel);
 
     }
 
@@ -127,7 +156,10 @@ public class DrawingView extends View{
         drawPaint.setStrokeWidth(mStrokeSize);
         canvas.translate(mDriftingX, mDriftingY);
         canvas.scale(mScaleFactor, mScaleFactor, mMiddleScaleTouchX, mMiddleScaleTouchY);
-        canvas.drawBitmap(canvasBitmap, 0, 0, drawPaint);
+        canvas.drawBitmap(canvasBitmap, rect, rect, drawPaint);
+
+        canvas.drawRect(rectF, paintStroke);
+
         canvas.drawPath(drawPath, drawPaint);
         clipBounds = canvas.getClipBounds();
         canvas.restore();
