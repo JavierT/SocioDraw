@@ -87,6 +87,8 @@ public class JoinFragment extends Fragment {
             ImageButton ib =(ImageButton)rootView.findViewById(i);
             ib.setOnClickListener(colorPickerListener);
             mColors.add(ib);
+            ib.getBackground().setAlpha(255);
+            ib.setEnabled(true);
         }
 
 
@@ -196,9 +198,5 @@ public class JoinFragment extends Fragment {
         String paint = mCurrPaint.getTag().toString();
         return Color.parseColor(paint);
     }
-
-
-
-
 
 }

@@ -1,7 +1,9 @@
 package com.sociotech.javiert.imaginary;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,6 +22,7 @@ import java.util.Calendar;
 
 public class ScreenFragment extends Fragment {
     private ScreenView screenView;
+    private changeToPattFrag mCallback;
 
     public ScreenFragment() {
         setHasOptionsMenu(true);
@@ -30,9 +34,37 @@ public class ScreenFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_screen, container, false);
 
         screenView = (ScreenView)rootView.findViewById(R.id.screen);
+        ImageView iv_arrow = (ImageView) rootView.findViewById(R.id.left_arrow);
+        iv_arrow.setOnClickListener(new View.OnClickListener() {
+            //@Override
+            public void onClick(View v) {
+                mCallback.changeToPatternFrag();
+            }
+        });
 
+        iv_arrow.setBackgroundResource(R.drawable.left_arrow_animation);
+        AnimationDrawable frameAnimation = (AnimationDrawable) iv_arrow.getBackground();
+        frameAnimation.start();
 
         return rootView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (changeToPattFrag) activity;
+        }catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement changePatt");
+        }
+    }
+
+    public interface changeToPattFrag {
+        public void changeToPatternFrag();
     }
 
     public void paintPoints(DrawingPath points) {

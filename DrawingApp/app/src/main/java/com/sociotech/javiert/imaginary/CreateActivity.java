@@ -39,7 +39,8 @@ import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 public class CreateActivity extends FragmentActivity
-    implements LobbyFragment.setStartGame {
+    implements LobbyFragment.setStartGame, PatternFragment.changeToDrawFrag,
+    ScreenFragment.changeToPattFrag {
 
     /* Load the native alljoyn_java library */
     static {
@@ -382,6 +383,15 @@ public class CreateActivity extends FragmentActivity
             mPatternPictures.reset();
         mPatternFragment.setImage(mPatternPictures.getRandomPicture());
         mScreenFragment.clearPicture();
+    }
+
+
+    public void changeToDrawingFrag() {
+        mPager.setCurrentItem(Constants.SCREEN_ID);
+    }
+
+    public void changeToPatternFrag() {
+        mPager.setCurrentItem(Constants.PATTERN_ID);
     }
 
     /**********************************************************************************************/

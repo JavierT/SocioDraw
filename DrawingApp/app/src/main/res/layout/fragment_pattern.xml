@@ -18,9 +18,11 @@
         android:layout_weight="0.86" />
 
     <ImageView
-        android:layout_width="40dp"
-        android:layout_height="60dp"
-        android:src="@drawable/right_arrow"
+        android:layout_width="60dp"
+        android:layout_height="80dp"
+
         android:contentDescription="@string/arrow_descriptor"
-        android:layout_gravity="center_vertical"/>
+        android:layout_gravity="center_vertical"
+        android:clickable="true"
+        android:id="@+id/right_arrow" />
 </LinearLayout>

@@ -11,9 +11,9 @@
     tools:context=".MainActivity.ScreenFragment">
 
     <ImageView
-        android:layout_width="40dp"
-        android:layout_height="60dp"
-        android:src="@drawable/left_arrow"
+        android:layout_width="60dp"
+        android:layout_height="80dp"
+        android:id="@+id/left_arrow"
         android:contentDescription="@string/arrow_descriptor"
         android:layout_gravity="center_vertical" />
 
