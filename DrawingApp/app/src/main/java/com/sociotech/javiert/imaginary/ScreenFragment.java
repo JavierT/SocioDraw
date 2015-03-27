@@ -46,7 +46,14 @@ public class ScreenFragment extends Fragment {
         AnimationDrawable frameAnimation = (AnimationDrawable) iv_arrow.getBackground();
         frameAnimation.start();
 
+        iv_arrow = (ImageView) rootView.findViewById(R.id.right_arrow);
+        iv_arrow.setBackgroundResource(R.drawable.right_arrow_animation);
+        frameAnimation = (AnimationDrawable) iv_arrow.getBackground();
+        frameAnimation.start();
+
         return rootView;
+
+
     }
 
     @Override

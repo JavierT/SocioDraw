@@ -3,6 +3,7 @@ package com.sociotech.javiert.imaginary;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -97,7 +98,11 @@ public class CreateActivity extends FragmentActivity
                     break;
                 case MESSAGE_PAINT_POINTS:
                     //mPagerAdapter.getItem(Constants.SCREEN_ID)
-                    mScreenFragment.paintPoints((DrawingPath) msg.obj);
+                    DrawingPath points = (DrawingPath) msg.obj;
+                    if(mScreensFragment.containsKey(points.color)) {
+                        mScreensFragment.get(points.color).paintPoints(points);
+                    }
+
                     break;
                 case MESSAGE_UPDATE_DRAWING_COUNTER:
                     mDrawingCounterView.setText((String) msg.obj);
@@ -113,7 +118,7 @@ public class CreateActivity extends FragmentActivity
 
     // Fragments associated to this activity
     private LobbyFragment mLobbyFragment;
-    private ScreenFragment mScreenFragment;
+    private HashMap<Integer,ScreenFragment> mScreensFragment;
     private PatternFragment mPatternFragment;
 
     // The Alljoyn object that is our service
@@ -293,7 +298,11 @@ public class CreateActivity extends FragmentActivity
     public void openScreenFragment() {
 
         getSupportFragmentManager().beginTransaction().remove(mLobbyFragment).commit();
-        mScreenFragment = new ScreenFragment();
+        mScreensFragment = new HashMap<>();
+        for(Player p : mCurrentPlayers.values())
+        {
+            mScreensFragment.put(Color.parseColor(p.color), new ScreenFragment());
+        }
         mPatternFragment = new PatternFragment();
 
         this.initialisePaging();
@@ -313,9 +322,11 @@ public class CreateActivity extends FragmentActivity
 
         List<Fragment> fragments = new Vector<>();
         fragments.add(Constants.PATTERN_ID, mPatternFragment);
-        fragments.add(Constants.SCREEN_ID, mScreenFragment);
-
-
+        int index = Constants.SCREEN_ID;
+        for(ScreenFragment screen : mScreensFragment.values()) {
+            fragments.add(index,screen);
+            index++;
+        }
 
         this.mPagerAdapter  = new PagerAdapter(getSupportFragmentManager(), fragments);
         //
@@ -358,7 +369,7 @@ public class CreateActivity extends FragmentActivity
                 mDrawingStatus = false;
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
-                mScreenFragment.savePicture();
+                //mScreenFragment.savePicture();                                                                        /////////////////////////////////weeeeeeeeeeeeeeeee
                 final Button btnContinue =(Button)findViewById(R.id.btnContinue);
                 btnContinue.setTypeface(MainActivity.handwritingFont);
                 btnContinue.setVisibility(View.VISIBLE);
@@ -382,7 +393,9 @@ public class CreateActivity extends FragmentActivity
         if(mPatternPictures.isEmpty())
             mPatternPictures.reset();
         mPatternFragment.setImage(mPatternPictures.getRandomPicture());
-        mScreenFragment.clearPicture();
+        for(ScreenFragment screen : mScreensFragment.values()) {
+            screen.clearPicture();
+        }
     }
 
 
@@ -411,10 +424,10 @@ public class CreateActivity extends FragmentActivity
          */
         @Override
         public Fragment getItem(int position) {
-            if(position == Constants.SCREEN_ID)
-            return this.fragments.get( Constants.SCREEN_ID);
+            if(position == Constants.PATTERN_ID)
+            return this.fragments.get( Constants.PATTERN_ID);
             else
-                return this.fragments.get(Constants.PATTERN_ID);
+                return this.fragments.get(position);
         }
 
         /* (non-Javadoc)
