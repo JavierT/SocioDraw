@@ -267,10 +267,10 @@ public class DrawingView extends View{
             case MotionEvent.ACTION_MOVE: {
                 final int pointerIndex = event.findPointerIndex(mActivePointerId);
                 Log.d("Imaginary - Painting", "pointerIndex is:" + pointerIndex);
-                if (pointerIndex == -1)
+                if (pointerIndex == -1 || pointerIndex>=event.getPointerCount())
                     break;
-                touchX = (event.getX(mActivePointerId) / mScaleFactor) + clipBounds.left;
-                touchY = (event.getY(mActivePointerId) / mScaleFactor) + clipBounds.top;
+                touchX = (event.getX(pointerIndex) / mScaleFactor) + clipBounds.left;
+                touchY = (event.getY(pointerIndex) / mScaleFactor) + clipBounds.top;
                 drawPath.lineTo(touchX, touchY);
                 mCallbackPaint.sendPaint(mLastPaintTouchX, mLastPaintTouchY, touchX, touchY, mStrokeSize/*Math.round(12/mScaleFactor)*/, mEraseMode);
                 mLastPaintTouchX = touchX;
@@ -320,7 +320,7 @@ public class DrawingView extends View{
         mStrokeSize = strokeSize;
     }
 
-    public void clearCanvas() {
+    public void clearCanvas(int w, int h) {
         mPaintAllowed = false;
         drawPath.reset();
         mScaleFactor = mOriginalScaleFactor;
@@ -331,6 +331,16 @@ public class DrawingView extends View{
         canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);
         canvasBitmap.prepareToDraw();
         drawCanvas.drawColor(Color.WHITE);
+        Paint fgPaintSel = new Paint();
+        fgPaintSel.setARGB(255, 0, 0,0);
+        fgPaintSel.setStyle(Paint.Style.STROKE);
+        fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+        rect = new Rect(0, 0, w, h);
+        rectF = new RectF(rect);
+        drawCanvas.drawLine(w/3, 0, w/3, h, fgPaintSel);
+        drawCanvas.drawLine(2*w/3, 0, 2*w/3, h, fgPaintSel);
+        drawCanvas.drawLine(0, 2*h/3, w, 2*h/3, fgPaintSel);
+        drawCanvas.drawLine(0, h/3, w, h/3, fgPaintSel);
         invalidate();
     }
 
@@ -362,7 +372,8 @@ public class DrawingView extends View{
         if(status)
             mEraseMode = false;
         mPaintMode = status;
-        mOldStrokeSize = mStrokeSize;
+        if(!mEraseMode)
+            mOldStrokeSize = mStrokeSize;
     }
 
     public void setEraseMode(boolean status) {
@@ -370,6 +381,7 @@ public class DrawingView extends View{
             return;
         mEraseMode = status;
         if(mEraseMode) {
+            mPaintMode = true;
             drawPaint.setColor(Color.WHITE);
             mOldStrokeSize = mStrokeSize;
             mStrokeSize = Constants.STROKE_SIZE_ERASE;

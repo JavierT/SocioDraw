@@ -315,8 +315,6 @@ public class CreateActivity extends FragmentActivity
         fragments.add(Constants.PATTERN_ID, mPatternFragment);
         fragments.add(Constants.SCREEN_ID, mScreenFragment);
 
-
-
         this.mPagerAdapter  = new PagerAdapter(getSupportFragmentManager(), fragments);
         //
         mPager = (ViewPager)findViewById(R.id.viewpager);
@@ -336,6 +334,7 @@ public class CreateActivity extends FragmentActivity
     private void initDrawingCounter() {
         mSecondsRemaining = Constants.DRAWING_TIME;
         mDrawingStatus = true;
+        mScreenFragment.allowShowingDrawing(true);
         new CountDownTimer(Constants.DRAWING_TIME *1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
@@ -345,9 +344,9 @@ public class CreateActivity extends FragmentActivity
                 String counterString;
                 if(seconds < 10)
                     counterString = "Time remaining "+ String.format("%d:0%d", minutes, seconds);
-
                 else
                     counterString = "Time remaining "+ String.format("%d:%d", minutes, seconds);
+
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, counterString));
             }
 
@@ -356,6 +355,7 @@ public class CreateActivity extends FragmentActivity
                 // not started yet.
                 mSecondsRemaining = -1;
                 mDrawingStatus = false;
+                mScreenFragment.allowShowingDrawing(false);
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
                 mScreenFragment.savePicture();
@@ -378,6 +378,7 @@ public class CreateActivity extends FragmentActivity
     }
 
     private void startNextRound() {
+        Log.d("DrawingApp","StartNewRound called: ");
         startGame(false);
         if(mPatternPictures.isEmpty())
             mPatternPictures.reset();

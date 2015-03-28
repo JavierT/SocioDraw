@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -30,8 +31,10 @@ public class ScreenView extends View {
     //canvas
     private Canvas drawCanvas;
     private Rect clipBounds;
+
     private Matrix mat;
-    Matrix auxMat;
+    private Matrix auxMat;
+    private boolean mDrawingAllowed;
 
 
     public ScreenView(Context context, AttributeSet attrs) {
@@ -47,26 +50,26 @@ public class ScreenView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
         canvasPaint = new Paint(Paint.DITHER_FLAG);
-
+        mDrawingAllowed = false;
     }
-
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         //view given size
         super.onSizeChanged(w,h,oldw,oldh);
+        if(drawCanvas == null || !mDrawingAllowed) {
+            Log.d("DrawingApp", "On size: " + w + "," + h);
+            canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);
+            drawCanvas = new Canvas(canvasBitmap);
+            drawCanvas.drawColor(Color.WHITE);
+            clipBounds = drawCanvas.getClipBounds();
 
-        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565 );
-        drawCanvas = new Canvas(canvasBitmap);
-        drawCanvas.drawColor(Color.WHITE);
-        clipBounds = drawCanvas.getClipBounds();
-
-        // We calculate the matrix needed to scale the canvas into the screen
-        // dimensions.
-        mat=new Matrix();
-        mat.setTranslate( clipBounds.left, clipBounds.top );
-        mat.setScale(w/totalWidth ,h/totalHeight);
-
+            // We calculate the matrix needed to scale the canvas into the screen
+            // dimensions.
+            mat = new Matrix();
+            mat.setTranslate(clipBounds.left, clipBounds.top);
+            mat.setScale(w / totalWidth, h / totalHeight);
+        }
 //        Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
 //        Log.d("DrawingApp","Canvas size: " + w + "," + h);
     }
@@ -76,7 +79,7 @@ public class ScreenView extends View {
         //draw view
         canvas.drawBitmap(canvasBitmap, mat, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
-
+        Log.d("DrawingApp", "onDraw");
     }
 
     public void paintPoints(DrawingPath points) {
@@ -91,6 +94,7 @@ public class ScreenView extends View {
     }
 
     public void prepareToSave() {
+        Log.d("DrawingApp", "prepareToSave canvas!!! ");
         auxMat = new Matrix(mat);
         mat.setTranslate(0,0);
         mat.setScale(1.0f,1.0f);
@@ -98,15 +102,21 @@ public class ScreenView extends View {
     }
 
     public void restoreAfterSave() {
+        Log.d("DrawingApp", "restoreAfterSave canvas!!! ");
         mat.set(auxMat);
         invalidate();
     }
 
     public void clearCanvas() {
+        Log.d("DrawingApp", "Cleaning canvas!!! ");
         drawPath.reset();
         canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);
         canvasBitmap.prepareToDraw();
         drawCanvas.drawColor(Color.WHITE);
         invalidate();
+    }
+
+    public void allowShowingDrawing(boolean status) {
+        mDrawingAllowed = status;
     }
 }

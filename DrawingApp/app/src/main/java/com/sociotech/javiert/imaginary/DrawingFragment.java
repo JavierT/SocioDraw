@@ -22,6 +22,9 @@ public class DrawingFragment extends Fragment {
 
     private int paint;
 
+    private int mSizeWidth;
+    private int mSizeHeight;
+
     public DrawingFragment() {
         setHasOptionsMenu(true);
     }
@@ -32,12 +35,12 @@ public class DrawingFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_drawing, container, false);
         Bundle args = getArguments();
         paint = args.getInt(Constants.ARGS_PAINT, 0xFF660000);
-        int sizeWidth = args.getInt(Constants.ARGS_SCREEN_WIDTH,Constants.WIDTH);
-        int sizeHeight = args.getInt(Constants.ARGS_SCREEN_HEIGHT, Constants.HEIGHT);
+        mSizeWidth = args.getInt(Constants.ARGS_SCREEN_WIDTH,Constants.WIDTH);
+        mSizeHeight = args.getInt(Constants.ARGS_SCREEN_HEIGHT, Constants.HEIGHT);
         //int paint = 0xFF660000;
 
         drawView = (DrawingView)rootView.findViewById(R.id.drawing);
-        drawView.setSize(sizeWidth,sizeHeight);
+        drawView.setSize(mSizeWidth,mSizeHeight);
         drawView.setCallback(getActivity());
         drawView.setPaint(paint);
 
@@ -77,7 +80,6 @@ public class DrawingFragment extends Fragment {
         mEraserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawView.setPaintMode(true);
                 drawView.setEraseMode(true);
                 v.setBackgroundResource(R.mipmap.ic_eraser_pressed);
                 mPaintButton.setBackgroundColor(Color.TRANSPARENT);
@@ -115,7 +117,7 @@ public class DrawingFragment extends Fragment {
 
     public void clearCanvas() {
         drawView.setEraseMode(false);
-        drawView.clearCanvas();
+        drawView.clearCanvas(mSizeWidth, mSizeHeight);
     }
 
     public void allowDrawing(boolean status) {

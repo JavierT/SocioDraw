@@ -34,6 +34,7 @@ public class ScreenFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_screen, container, false);
 
         screenView = (ScreenView)rootView.findViewById(R.id.screen);
+
         ImageView iv_arrow = (ImageView) rootView.findViewById(R.id.left_arrow);
         iv_arrow.setOnClickListener(new View.OnClickListener() {
             //@Override
@@ -126,6 +127,10 @@ public class ScreenFragment extends Fragment {
 
     }
 
+    public void allowShowingDrawing(boolean status)
+    {
+        screenView.allowShowingDrawing(status);
+    }
 
     public void clearPicture() {
         screenView.clearCanvas();
