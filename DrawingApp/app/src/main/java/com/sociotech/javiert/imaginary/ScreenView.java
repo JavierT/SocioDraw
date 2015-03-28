@@ -32,6 +32,7 @@ public class ScreenView extends View {
     private Rect clipBounds;
     private Matrix mat;
     Matrix auxMat;
+    private boolean mDrawingAllowed;
 
 
     public ScreenView(Context context, AttributeSet attrs) {
@@ -47,6 +48,7 @@ public class ScreenView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
 
         canvasPaint = new Paint(Paint.DITHER_FLAG);
+        mDrawingAllowed= false;
 
     }
 
@@ -54,19 +56,21 @@ public class ScreenView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         //view given size
-        super.onSizeChanged(w,h,oldw,oldh);
+        super.onSizeChanged(w, h, oldw, oldh);
 
-        canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565 );
-        drawCanvas = new Canvas(canvasBitmap);
-        drawCanvas.drawColor(Color.WHITE);
-        clipBounds = drawCanvas.getClipBounds();
 
-        // We calculate the matrix needed to scale the canvas into the screen
-        // dimensions.
-        mat=new Matrix();
-        mat.setTranslate( clipBounds.left, clipBounds.top );
-        mat.setScale(w/totalWidth ,h/totalHeight);
+        if(drawCanvas == null /*|| !mDrawingAllowed*/) {
+            canvasBitmap = Bitmap.createBitmap(Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);
+            drawCanvas = new Canvas(canvasBitmap);
+            drawCanvas.drawColor(Color.WHITE);
+            clipBounds = drawCanvas.getClipBounds();
 
+            // We calculate the matrix needed to scale the canvas into the screen
+            // dimensions.
+            mat = new Matrix();
+            mat.setTranslate(clipBounds.left, clipBounds.top);
+            mat.setScale(w / totalWidth, h / totalHeight);
+        }
 //        Log.d("DrawingApp","Old size : " + oldw + "," + oldh);
 //        Log.d("DrawingApp","Canvas size: " + w + "," + h);
     }
@@ -85,15 +89,15 @@ public class ScreenView extends View {
         drawPath.lineTo((float)points.toX, (float)points.toY);
         drawPaint.setStrokeWidth(points.stroke);
         drawPaint.setColor(points.color);
-        drawCanvas.drawPath(drawPath,drawPaint);
+        drawCanvas.drawPath(drawPath, drawPaint);
         drawPath.reset();
         invalidate(); //invalidate view to repaint
     }
 
     public void prepareToSave() {
         auxMat = new Matrix(mat);
-        mat.setTranslate(0,0);
-        mat.setScale(1.0f,1.0f);
+        mat.setTranslate(0, 0);
+        mat.setScale(1.0f, 1.0f);
         invalidate();
     }
 
@@ -108,5 +112,9 @@ public class ScreenView extends View {
         canvasBitmap.prepareToDraw();
         drawCanvas.drawColor(Color.WHITE);
         invalidate();
+    }
+
+    public void setDrawingAllowed(boolean status) {
+        mDrawingAllowed = status;
     }
 }

@@ -23,7 +23,7 @@ public abstract class Constants {
     public static final int SCREEN_ID = 1;
 
 
-    public static final int DRAWING_TIME = 180;
+    public static final int DRAWING_TIME = 30;
     public static final String DRAWING_FOLDER = "Imaginary";
     public static final String USED_PICTURES_KEY = "PicturesUsedMap";
 

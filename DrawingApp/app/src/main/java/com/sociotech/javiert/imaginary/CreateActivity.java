@@ -301,7 +301,8 @@ public class CreateActivity extends FragmentActivity
         mScreensFragment = new HashMap<>();
         for(Player p : mCurrentPlayers.values())
         {
-            mScreensFragment.put(Color.parseColor(p.color), new ScreenFragment());
+            ScreenFragment screen = new ScreenFragment();
+            mScreensFragment.put(Color.parseColor(p.color), screen);
         }
         mPatternFragment = new PatternFragment();
 
@@ -334,6 +335,7 @@ public class CreateActivity extends FragmentActivity
         mPager.setAdapter(this.mPagerAdapter);
 
         mPager.setCurrentItem(Constants.PATTERN_ID);
+        mPager.setOffscreenPageLimit(6);
 
         mDrawingCounterView = (TextView)findViewById(R.id.txtDrawiningCounter);
         mDrawingCounterView.setTypeface(MainActivity.handwritingFont);
@@ -347,6 +349,9 @@ public class CreateActivity extends FragmentActivity
     private void initDrawingCounter() {
         mSecondsRemaining = Constants.DRAWING_TIME;
         mDrawingStatus = true;
+//        for(ScreenFragment screen : mScreensFragment.values()) {
+//            screen.setDrawingAllowed(true);
+//        }
         new CountDownTimer(Constants.DRAWING_TIME *1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
@@ -367,6 +372,9 @@ public class CreateActivity extends FragmentActivity
                 // not started yet.
                 mSecondsRemaining = -1;
                 mDrawingStatus = false;
+//                for(ScreenFragment screen : mScreensFragment.values()) {
+//                    screen.setDrawingAllowed(false);
+//                }
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
                 mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
                 //mScreenFragment.savePicture();                                                                        /////////////////////////////////weeeeeeeeeeeeeeeee

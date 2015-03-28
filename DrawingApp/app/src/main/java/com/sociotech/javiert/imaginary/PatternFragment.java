@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +63,14 @@ public class PatternFragment extends Fragment {
                     + " must implement changeFrag");
         }
     }
+
+    @Override
+    public void onResume() {
+        Log.d("DrawingApp", "The onResume is called in the pattern fragment");
+        super.onResume();
+    }
+
+
 
     public interface changeToDrawFrag {
         public void changeToDrawingFrag();

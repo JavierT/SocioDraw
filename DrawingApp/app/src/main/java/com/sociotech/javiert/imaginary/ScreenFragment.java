@@ -70,6 +70,12 @@ public class ScreenFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        Log.d("DrawingApp", "The onResume is called in the screen fragment");
+        super.onResume();
+    }
+
     public interface changeToPattFrag {
         public void changeToPatternFrag();
     }
@@ -78,9 +84,9 @@ public class ScreenFragment extends Fragment {
         screenView.paintPoints(points);
     }
 
-    public void savePicture()
+    public void savePicture(String username)
     {
-        String uniqueId = getTodaysDate() + "_" + getCurrentTime() + ".png";
+        String uniqueId = getTodaysDate() + "_" + getCurrentTime() + username + ".png";
 
         File f = new File(Environment.getExternalStorageDirectory(),
                 Constants.DRAWING_FOLDER);
@@ -136,5 +142,9 @@ public class ScreenFragment extends Fragment {
 
     public void clearPicture() {
         screenView.clearCanvas();
+    }
+
+    public void setDrawingAllowed(boolean status) {
+        screenView.setDrawingAllowed(status);
     }
 }
