@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#698de3f1"
+    >
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center|left"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/create_options"
+        android:id="@+id/txtCreateOptions"
+        android:layout_weight="1"
+        android:layout_margin="20dp" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_gravity="center"
+            android:layout_weight="1">
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="120dp"
+                android:text="@string/btnCollaborative"
+                android:id="@+id/btnCollaborative"
+                android:background="@mipmap/paper_style"
+                android:layout_marginBottom="10dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/txtCollaborativeDesc"
+                android:id="@+id/txtCollaborativeDesc"
+                android:gravity="left"
+                android:paddingLeft="2dp"
+                android:layout_gravity="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1">
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="120dp"
+                android:text="@string/btnCompetitive"
+                android:id="@+id/btnCompetitive"
+                android:background="@mipmap/paper_style"
+                android:layout_marginBottom="10dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/txtCompetitiveDesc"
+                android:id="@+id/txtCompetitiveDesc"
+                android:gravity="center"
+                android:layout_gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

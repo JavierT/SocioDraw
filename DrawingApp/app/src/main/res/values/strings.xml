@@ -14,11 +14,11 @@
     <string name="title_activity_join">Imaginary</string>
     <string name="enter_message_hint">Enter message</string>
     <string name="action_quit">Quit</string>
-    <string name="create_as_player">Device as player</string>
-    <string name="create_as_screen">Device as screen</string>
-    <string name="create_as_player_desc">This device will participate in the drawings</string>
-    <string name="create_as_screen_desc">This device will display only the drawings</string>
-    <string name="create_options">Please choose the role of the current device: </string>
+    <string name="btnCollaborative">Collaborative game</string>
+    <string name="btnCompetitive">Competitive game</string>
+    <string name="txtCollaborativeDesc">Everybody creates a collaborative drawing</string>
+    <string name="txtCompetitiveDesc">Everyone creates his/her own drawing</string>
+    <string name="create_options">Please choose the type of game: </string>
 
     <string name="lobby">The game is waiting for players</string>
     <string name="lobby_color">Please, select a color:</string>

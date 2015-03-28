@@ -24,7 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CreateActivity"
+            android:name=".CreateCollaborativeActivity"
             android:label="@string/title_activity_create"
             android:screenOrientation="landscape" >
         </activity>

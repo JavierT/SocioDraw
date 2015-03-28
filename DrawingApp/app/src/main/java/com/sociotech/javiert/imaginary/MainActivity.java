@@ -1,7 +1,6 @@
 package com.sociotech.javiert.imaginary;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -92,12 +91,14 @@ public class MainActivity extends FragmentActivity
     /////////////////////////////////////////////////////////////////////////////////////
     public void openCreateOptionsFragment() {
 
-        Intent myIntent = new Intent(this, CreateActivity.class);
-        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        myIntent.putExtra(getString(R.string.username), mUsername); //Optional parameters
-        this.startActivity(myIntent);
-        finish();
-
+        CreateOptionsFragment createFragment = new CreateOptionsFragment();
+        Bundle args = new Bundle();
+        args.putString(getString(R.string.username), mUsername);
+        createFragment.setArguments(args);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, createFragment)
+                .addToBackStack(null)
+                .commit();
     }
 }
 
