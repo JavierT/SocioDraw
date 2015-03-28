@@ -31,7 +31,7 @@ public class CreateOptionsFragment extends Fragment {
         btnScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createGameAsScreen();
+                createCollaborativeGame();
             }
         });
         btnScreen.setTypeface((MainActivity.handwritingFont));
@@ -39,21 +39,21 @@ public class CreateOptionsFragment extends Fragment {
         btnPlayer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createGameAsPlayer();
+                createCompetitiveGame();
             }
         });
         btnPlayer.setTypeface((MainActivity.handwritingFont));
         return rootView;
     }
 
-    private void createGameAsPlayer() {
-        Intent myIntent = new Intent(getActivity(), CreateCollaborativeActivity.class);
+    private void createCompetitiveGame() {
+        Intent myIntent = new Intent(getActivity(), CreateCompetitiveActivity.class);
         myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         this.startActivity(myIntent);
         getActivity().finish();
     }
-    private void createGameAsScreen() {
-        Intent myIntent = new Intent(getActivity(), CreateCompetitiveActivity.class);
+    private void createCollaborativeGame() {
+        Intent myIntent = new Intent(getActivity(), CreateCollaborativeActivity.class);
         myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         this.startActivity(myIntent);
         getActivity().finish();

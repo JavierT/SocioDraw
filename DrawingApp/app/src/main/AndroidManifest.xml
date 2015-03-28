@@ -29,6 +29,11 @@
             android:screenOrientation="landscape" >
         </activity>
         <activity
+            android:name=".CreateCompetitiveActivity"
+            android:label="@string/title_activity_create"
+            android:screenOrientation="landscape" >
+        </activity>
+        <activity
             android:name=".JoinActivity"
             android:label="@string/title_activity_join"
             android:screenOrientation="landscape" >
