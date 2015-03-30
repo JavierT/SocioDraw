@@ -26,6 +26,9 @@ public class DrawingPath {
 
     @Position(5)
     public int stroke;
+
+    @Position(6)
+    public String username;
 //
 //    public DrawingPath() {
 //        this.fromX= 0.0f;

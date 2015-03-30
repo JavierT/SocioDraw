@@ -55,8 +55,7 @@ public class DrawingFragment extends Fragment {
         mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawView.setEraseMode(false);
-                drawView.setPaintMode(true);
+                drawView.setPaintMode();
                 mPaintButton.setBackgroundColor(paint);
                 mHandButton.setBackgroundResource(R.mipmap.ic_hand);
                 mEraserButton.setBackgroundResource(R.mipmap.ic_eraser);
@@ -67,7 +66,7 @@ public class DrawingFragment extends Fragment {
         mHandButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawView.setPaintMode(false);
+                drawView.setMovementMode();
 
                 v.setBackgroundResource(R.mipmap.ic_hand_pressed);
                 mPaintButton.setBackgroundColor(Color.TRANSPARENT);
@@ -80,7 +79,7 @@ public class DrawingFragment extends Fragment {
         mEraserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawView.setEraseMode(true);
+                drawView.setEraseMode();
                 v.setBackgroundResource(R.mipmap.ic_eraser_pressed);
                 mPaintButton.setBackgroundColor(Color.TRANSPARENT);
                 mHandButton.setBackgroundResource(R.mipmap.ic_hand);
@@ -116,7 +115,12 @@ public class DrawingFragment extends Fragment {
     }
 
     public void clearCanvas() {
-        drawView.setEraseMode(false);
+        drawView.setStrokeSize(Constants.STROKE_SIZE_MEDIUM);
+        mStrokeButton.setImageResource(R.mipmap.ic_stroke2);
+        mHandButton.setBackgroundResource(R.mipmap.ic_hand);
+        mEraserButton.setBackgroundResource(R.mipmap.ic_eraser);
+        mPaintButton.setBackgroundColor(paint);
+        drawView.setPaintMode();
         drawView.clearCanvas(mSizeWidth, mSizeHeight);
     }
 

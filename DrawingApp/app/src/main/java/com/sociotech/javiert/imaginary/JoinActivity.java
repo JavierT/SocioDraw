@@ -394,6 +394,7 @@ public class JoinActivity extends FragmentActivity
         paintPath.fromY = fromY;
         paintPath.toX = toX;
         paintPath.toY = toY;
+        paintPath.username = mUsername;
         if(erase)
             paintPath.color = Color.WHITE;
         else
@@ -702,7 +703,7 @@ public class JoinActivity extends FragmentActivity
                             sendMessage(obtainMessage(CLIENT_WAITING, firstTime));
                         }
                     } catch (BusException e) {
-                        logException("DrawingInterface.getLobbyStatus()", e);
+                        //logException("DrawingInterface.getLobbyStatus()", e);
                         sendUiMessage(MESSAGE_POST_TOAST, "Game is over. Thanks for playing");
                         exitGame();
 

@@ -315,11 +315,6 @@ public class DrawingView extends View{
         }
     }
 
-    public void setStrokeSize(int strokeSize) {
-        mOldStrokeSize = strokeSize;
-        mStrokeSize = strokeSize;
-    }
-
     public void clearCanvas(int w, int h) {
         mPaintAllowed = false;
         drawPath.reset();
@@ -368,30 +363,30 @@ public class DrawingView extends View{
         }
     }
 
-    public void setPaintMode(boolean status) {
-        if(status)
-            mEraseMode = false;
-        mPaintMode = status;
-        if(!mEraseMode)
-            mOldStrokeSize = mStrokeSize;
+    public void setPaintMode() {
+        mEraseMode = false;
+        mPaintMode = true;
+        mStrokeSize = mOldStrokeSize;
+        drawPaint.setColor(paintColor);
     }
 
-    public void setEraseMode(boolean status) {
-        if(mEraseMode == status) // If we are already in this mode, we don't do anything.
-            return;
-        mEraseMode = status;
-        if(mEraseMode) {
-            mPaintMode = true;
-            drawPaint.setColor(Color.WHITE);
+    public void setEraseMode() {
+        mPaintMode = true;
+        mEraseMode = true;
+        if(mStrokeSize != Constants.STROKE_SIZE_ERASE)
             mOldStrokeSize = mStrokeSize;
-            mStrokeSize = Constants.STROKE_SIZE_ERASE;
-        }
-        else {
-            drawPaint.setColor(paintColor);
-            mStrokeSize = mOldStrokeSize;
-        }
-
+        mStrokeSize = Constants.STROKE_SIZE_ERASE;
+        drawPaint.setColor(Color.WHITE);
     }
 
+    public void setMovementMode() {
+        mEraseMode = false;
+        mPaintMode = false;
+    }
+
+    public void setStrokeSize(int strokeSize) {
+        mOldStrokeSize = strokeSize;
+        mStrokeSize = strokeSize;
+    }
 
 }

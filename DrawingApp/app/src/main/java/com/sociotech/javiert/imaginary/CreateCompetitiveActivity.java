@@ -3,7 +3,6 @@ package com.sociotech.javiert.imaginary;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -99,8 +98,8 @@ public class CreateCompetitiveActivity extends FragmentActivity
                 case MESSAGE_PAINT_POINTS:
                     //mPagerAdapter.getItem(Constants.SCREEN_ID)
                     DrawingPath points = (DrawingPath) msg.obj;
-                    if(mScreensFragment.containsKey(points.color)) {
-                        mScreensFragment.get(points.color).paintPoints(points);
+                    if(mScreensFragment.containsKey(points.username)) {
+                        mScreensFragment.get(points.username).paintPoints(points);
                     }
 
                     break;
@@ -118,7 +117,7 @@ public class CreateCompetitiveActivity extends FragmentActivity
 
     // Fragments associated to this activity
     private LobbyFragment mLobbyFragment;
-    private HashMap<Integer,ScreenFragment> mScreensFragment;
+    private HashMap<String,ScreenFragment> mScreensFragment;
     private PatternFragment mPatternFragment;
 
     // The Alljoyn object that is our service
@@ -302,7 +301,7 @@ public class CreateCompetitiveActivity extends FragmentActivity
         for(Player p : mCurrentPlayers.values())
         {
             ScreenFragment screen = new ScreenFragment();
-            mScreensFragment.put(Color.parseColor(p.color), screen);
+            mScreensFragment.put(p.name, screen);
         }
         mPatternFragment = new PatternFragment();
 

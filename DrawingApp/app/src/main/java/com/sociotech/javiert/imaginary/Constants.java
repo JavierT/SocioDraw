@@ -17,7 +17,7 @@ public abstract class Constants {
     public static final int STROKE_SIZE_BIG = 20;
     public static final int STROKE_SIZE_MEDIUM = 13;
     public static final int STROKE_SIZE_SMALL = 6;
-    public static final int STROKE_SIZE_ERASE = 60;
+    public static final int STROKE_SIZE_ERASE = 40;
 
     public static final int PATTERN_ID = 0;
     public static final int SCREEN_ID = 1;
