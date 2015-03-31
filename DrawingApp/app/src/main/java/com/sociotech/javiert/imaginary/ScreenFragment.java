@@ -3,6 +3,9 @@ package com.sociotech.javiert.imaginary;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,6 +26,7 @@ import java.util.Calendar;
 public class ScreenFragment extends Fragment {
     private ScreenView screenView;
     private changeToPattFrag mCallback;
+    private AnimationDrawable frameAnimation;
 
     public ScreenFragment() {
         setHasOptionsMenu(true);
@@ -44,8 +48,9 @@ public class ScreenFragment extends Fragment {
         });
 
         iv_arrow.setBackgroundResource(R.drawable.left_arrow_animation);
-        AnimationDrawable frameAnimation = (AnimationDrawable) iv_arrow.getBackground();
+        frameAnimation = (AnimationDrawable) iv_arrow.getBackground();
         frameAnimation.start();
+
 
         return rootView;
     }
@@ -134,5 +139,15 @@ public class ScreenFragment extends Fragment {
 
     public void clearPicture() {
         screenView.clearCanvas();
+    }
+
+    public void setArrowsToRed() {
+        ColorFilter filter = new LightingColorFilter( Color.BLACK, Color.RED);
+        frameAnimation.setColorFilter(filter);
+    }
+
+    public void setArrowsToNormal() {
+        ColorFilter filter = new LightingColorFilter( Color.RED, Color.BLACK);
+        frameAnimation.setColorFilter(filter);
     }
 }

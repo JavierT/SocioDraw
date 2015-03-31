@@ -7,7 +7,7 @@ package com.sociotech.javiert.imaginary;
  */
 public abstract class Constants {
 
-    public static final int countdownTimer = 10
+    public static final int countdownTimer = 6
             ;
     public static final String ARGS_PAINT = "PaintSelected";
     public static final int HEIGHT = 800;//1080;
@@ -27,4 +27,5 @@ public abstract class Constants {
     public static final String DRAWING_FOLDER = "Imaginary";
     public static final String USED_PICTURES_KEY = "PicturesUsedMap";
 
+    public static final int TIME_BEFORE_ARROWS_TO_RED_COLL = 15;
 }

@@ -57,6 +57,7 @@ public class CreateCollaborativeActivity extends FragmentActivity
     private static final int MESSAGE_SET_GAME_READY = 6;
     private static final int MESSAGE_PAINT_POINTS = 7;
     private static final int MESSAGE_UPDATE_DRAWING_COUNTER = 8;
+    private static final int MESSAGE_ARROWS_TO_RED = 9;
 
     public static final int SERVICE_CONNECT = 1;
     public static final int SERVICE_DISCONNECT = 2;
@@ -81,15 +82,15 @@ public class CreateCollaborativeActivity extends FragmentActivity
                     break;
                 case MESSAGE_COLOR_SELECTED:
                     String name = (String) msg.obj;
-                    Toast toast = Toast.makeText(getApplicationContext(), "The player " + name
-                                                + "has taken this color", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getApplicationContext(), name
+                                                + R.string.colorTake, Toast.LENGTH_SHORT);
                     toast.getView().findViewById(android.R.id.message);
                     mLobbyFragment.updatePlayerColor(name,mCurrentPlayers.get(name).color);
                     // Optional set name of player in that color.
                     break;
                 case MESSAGE_REMOVE_PLAYER:
-                    Toast.makeText(getApplicationContext(), "The player " + msg.obj
-                                    + " left the game", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), (String)msg.obj
+                                    + R.string.player_left, Toast.LENGTH_LONG).show();
                     mLobbyFragment.removePlayer((String) msg.obj);
                     break;
                 case MESSAGE_SET_GAME_READY:
@@ -100,7 +101,16 @@ public class CreateCollaborativeActivity extends FragmentActivity
                     mScreenFragment.paintPoints((DrawingPath) msg.obj);
                     break;
                 case MESSAGE_UPDATE_DRAWING_COUNTER:
-                    mDrawingCounterView.setText((String) msg.obj);
+                    mDrawingCounterView.setText((String)msg.obj);
+                    break;
+                case MESSAGE_ARROWS_TO_RED:
+                    if((boolean)msg.obj) {
+                        mScreenFragment.setArrowsToRed();
+                        mPatternFragment.setArrowsToRed();
+                    } else {
+                        mScreenFragment.setArrowsToNormal();
+                        mPatternFragment.setArrowsToNormal();
+                    }
                     break;
                 default:
                     break;
@@ -134,6 +144,7 @@ public class CreateCollaborativeActivity extends FragmentActivity
     private ViewPager mPager;
     private Pictures mPatternPictures;
     private int roundsRemaining = 3; // minimum 3 players to start the game
+    private int timeWithoutChangeTabs = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -256,13 +267,13 @@ public class CreateCollaborativeActivity extends FragmentActivity
         myProgressDialog = new ProgressDialog(this);
         myProgressDialog.setCancelable(false);
         if(isFirstRound) {
-            myProgressDialog.setTitle("Starting the game");
+            myProgressDialog.setTitle(R.string.startGameTitle);
             // Number of rounds (pictures) that is gonna be is the number of players connected + server player
             roundsRemaining = mCurrentPlayers.size()+1;
         }
         else
-            myProgressDialog.setTitle("Starting the next round");
-        myProgressDialog.setMessage("The game will start in " + Constants.countdownTimer + " seconds...");
+            myProgressDialog.setTitle(R.string.startGameTitle);
+        myProgressDialog.setMessage(getString(R.string.startGameDesc) + String.format(" %d ",Constants.countdownTimer) + getString(R.string.seconds) +"...");
         myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         myProgressDialog.show();
         mSecondsRemaining = Constants.countdownTimer;
@@ -270,13 +281,14 @@ public class CreateCollaborativeActivity extends FragmentActivity
 
             public void onTick(long millisUntilFinished) {
                 mSecondsRemaining--;
-                myProgressDialog.setMessage("The game will start in "+
-                        millisUntilFinished / 1000 + " seconds...");
+                myProgressDialog.setMessage(getString(R.string.startGameDesc) +
+                        String.format(" %d ",millisUntilFinished / 1000) + getString(R.string.seconds) +"...");
             }
 
             public void onFinish() {
                 mSecondsRemaining = 0;
-                myProgressDialog.dismiss();
+                if(myProgressDialog!= null)
+                    myProgressDialog.dismiss();
                 if(isFirstRound)
                     openScreenFragment();
                 else {
@@ -316,6 +328,7 @@ public class CreateCollaborativeActivity extends FragmentActivity
         fragments.add(Constants.SCREEN_ID, mScreenFragment);
 
         this.mPagerAdapter  = new PagerAdapter(getSupportFragmentManager(), fragments);
+
         //
         mPager = (ViewPager)findViewById(R.id.viewpager);
         mPager.setAdapter(this.mPagerAdapter);
@@ -339,15 +352,24 @@ public class CreateCollaborativeActivity extends FragmentActivity
 
             public void onTick(long millisUntilFinished) {
                 mSecondsRemaining--;
+                timeWithoutChangeTabs++;
                 long minutes = TimeUnit.SECONDS.toMinutes(mSecondsRemaining);
                 long seconds = mSecondsRemaining - TimeUnit.MINUTES.toSeconds(minutes);
                 String counterString;
-                if(seconds < 10)
-                    counterString = "Time remaining "+ String.format("%d:0%d", minutes, seconds);
+                if(seconds < 10) {
+                    counterString = String.format(" %d:0%d", minutes, seconds);
+                }
                 else
-                    counterString = "Time remaining "+ String.format("%d:%d", minutes, seconds);
+                    counterString = String.format(" %d:%d", minutes, seconds);
 
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, counterString));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, getString(R.string.timeRemaining) + counterString));
+                if(timeWithoutChangeTabs>Constants.TIME_BEFORE_ARROWS_TO_RED_COLL){
+                    mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ARROWS_TO_RED, true));
+                    timeWithoutChangeTabs = 0;
+                } else if(mPager.getCurrentItem() == Constants.SCREEN_ID) {// visited
+                    timeWithoutChangeTabs = 0;
+                    mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ARROWS_TO_RED, false));
+                }
             }
 
             public void onFinish() {
@@ -356,8 +378,9 @@ public class CreateCollaborativeActivity extends FragmentActivity
                 mSecondsRemaining = -1;
                 mDrawingStatus = false;
                 mScreenFragment.allowShowingDrawing(false);
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, "Time is up!"));
-                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, "Time is up! Please, show the picture to the others"));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_UPDATE_DRAWING_COUNTER, getString(R.string.timeUpTitle)));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_POST_TOAST, getString(R.string.timeUp)));
+                mHandler.sendMessage(mHandler.obtainMessage(MESSAGE_ARROWS_TO_RED, false));
                 mScreenFragment.savePicture();
                 final Button btnContinue =(Button)findViewById(R.id.btnContinue);
                 btnContinue.setTypeface(MainActivity.handwritingFont);
@@ -365,6 +388,29 @@ public class CreateCollaborativeActivity extends FragmentActivity
                 btnContinue.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        showContinueConfirmation(v);
+                    }
+                });
+            }
+        }.start();
+    }
+
+    private void showContinueConfirmation(final View v) {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(R.string.continueAlert)
+                .setMessage(R.string.continueAlertDesc)
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+
+                })
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
                         v.setVisibility(View.GONE);
                         roundsRemaining--;
                         if(roundsRemaining>0)
@@ -372,9 +418,10 @@ public class CreateCollaborativeActivity extends FragmentActivity
                         else
                             finishGame();
                     }
-                });
-            }
-        }.start();
+
+                })
+
+                .show();
     }
 
     private void startNextRound() {
@@ -406,17 +453,24 @@ public class CreateCollaborativeActivity extends FragmentActivity
         public PagerAdapter(FragmentManager fm, List<Fragment> fragments) {
             super(fm);
             this.fragments = fragments;
+
         }
+
+
         /* (non-Javadoc)
          * @see android.support.v4.app.FragmentPagerAdapter#getItem(int)
          */
         @Override
         public Fragment getItem(int position) {
+
             if(position == Constants.SCREEN_ID)
-            return this.fragments.get( Constants.SCREEN_ID);
+                return this.fragments.get( Constants.SCREEN_ID);
             else
                 return this.fragments.get(Constants.PATTERN_ID);
+
         }
+
+
 
         /* (non-Javadoc)
          * @see android.support.v4.view.PagerAdapter#getCount()

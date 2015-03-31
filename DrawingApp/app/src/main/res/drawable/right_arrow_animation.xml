@@ -3,5 +3,5 @@
     <item android:drawable="@drawable/ic_rarrow_1" android:duration="500" />
     <item android:drawable="@drawable/ic_rarrow_2" android:duration="500" />
     <item android:drawable="@drawable/ic_rarrow_3" android:duration="500" />
-    <item android:drawable="@drawable/ic_rarrow_2" android:duration="500" />
+    <!--<item android:drawable="@drawable/ic_rarrow_2" android:duration="500" />-->
 </animation-list>

@@ -85,7 +85,7 @@ public class JoinActivity extends FragmentActivity
                     Toast.makeText(getApplicationContext(), (String) msg.obj, Toast.LENGTH_LONG).show() ;
                     break;
                 case MESSAGE_START_PROGRESS_DIALOG:
-                    mDialog = ProgressDialog.show(JoinActivity.this, "", "Finding Drawing Service.\n Please wait...", true, true);
+                    mDialog = ProgressDialog.show(JoinActivity.this, "", "Finding friends.\n Please wait...", true, true);
                     mDialog.setCancelable(true);
                     mDialog.setCanceledOnTouchOutside(false);
                     mDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
