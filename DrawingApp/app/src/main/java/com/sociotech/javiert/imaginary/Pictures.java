@@ -1,11 +1,21 @@
 package com.sociotech.javiert.imaginary;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -15,73 +25,118 @@ import java.util.Random;
  */
 public class Pictures {
 
-    static private ArrayList<Integer> picturesList;
+    private ArrayList<String> picturesList;
+    private Activity parentActivity;
     static private Random r;
     private final SharedPreferences sharedPref;
     private final SharedPreferences.Editor editor;
     private final ArrayList<String> usedPictures;
 
-    public Pictures(SharedPreferences preferences) {
+    public Pictures(Activity activity, SharedPreferences preferences) {
+        parentActivity = activity;
         sharedPref = preferences;
         editor = sharedPref.edit();
 
         r = new Random();
-        picturesList = new ArrayList<>();
-        picturesList.add(R.drawable.picture1);
-        picturesList.add(R.drawable.picture2);
-        picturesList.add(R.drawable.picture3);
-        picturesList.add(R.drawable.picture4);
-        picturesList.add(R.drawable.picture5);
-        picturesList.add(R.drawable.picture6);
-        picturesList.add(R.drawable.picture7);
-        picturesList.add(R.drawable.picture8);
-        picturesList.add(R.drawable.picture9);
-        picturesList.add(R.drawable.picture10);
-        picturesList.add(R.drawable.picture11);
+
+        getPicturesFromSD();
 
         usedPictures = getStringArrayPref(Constants.USED_PICTURES_KEY);
         if(usedPictures != null && !usedPictures.isEmpty()) {
-            for(String pic: usedPictures) {
-                Integer picName = Integer.parseInt(pic);
-                if(picturesList.contains(picName))
-                    picturesList.remove(picName);
-
-            }
+            picturesList.removeAll(usedPictures);
+//            for(String pic: usedPictures) {
+//                if(picturesList.contains(pic))
+//                    picturesList.remove(pic);
+//
+//            }
         }
     }
 
-    public int getRandomPicture()
+    private void getPicturesFromSD() {
+        File path = new File(Environment.getExternalStorageDirectory(),Constants.DRAWING_FOLDER + "/" + Constants.INCOME_FOLDER);
+        if(!path.exists() || (path.list().length == 0))
+        {
+            addDefaultPictures();
+            return;
+        }
+        picturesList = new ArrayList<>(Arrays.asList(path.list()));
+    }
+
+    private void addDefaultPictures() {
+        ArrayList<Integer> pictures = new ArrayList<>();
+        pictures.add(R.drawable.picture1);
+        pictures.add(R.drawable.picture2);
+        pictures.add(R.drawable.picture3);
+        pictures.add(R.drawable.picture4);
+        pictures.add(R.drawable.picture5);
+        pictures.add(R.drawable.picture6);
+        pictures.add(R.drawable.picture7);
+        pictures.add(R.drawable.picture8);
+        pictures.add(R.drawable.picture9);
+        pictures.add(R.drawable.picture10);
+        pictures.add(R.drawable.picture11);
+        picturesList = new ArrayList<>();
+
+
+        ProgressDialog myProgressDialog = new ProgressDialog(parentActivity);
+        myProgressDialog.setCancelable(false);
+
+        myProgressDialog.setTitle("Creating pictures");
+
+        myProgressDialog.setMessage("Please wait...");
+        myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        myProgressDialog.show();
+
+        FileOutputStream outStream = null;
+        for( int i=0; i<pictures.size(); i++ ) {
+            File file = new File(Environment.getExternalStorageDirectory()+"/" + Constants.DRAWING_FOLDER + "/" + Constants.INCOME_FOLDER, "picture"+i+".png");
+            try {
+                picturesList.add("picture"+i+".png");
+                outStream = new FileOutputStream(file);
+
+                Bitmap bm = BitmapFactory.decodeResource(parentActivity.getResources(), pictures.get(i));
+                bm.compress(Bitmap.CompressFormat.PNG, 100, outStream);
+                outStream.flush();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (outStream != null) {
+            try {
+                outStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        myProgressDialog.dismiss();
+    }
+
+    public String getRandomPicture()
     {
+        if(picturesList.size() == 0)
+            getPicturesFromSD();
         if(picturesList.size()==1) {
-            int pic = picturesList.get(0);
+            String pic = picturesList.get(0);
             reset();
             return pic;
         } else {
             int n = r.nextInt(picturesList.size() - 1);
-            Integer pic = picturesList.get(n);
+            String pic = picturesList.get(n);
             picturesList.remove(n);
             usedPictures.add(String.valueOf(pic));
             setStringArrayPref(Constants.USED_PICTURES_KEY,usedPictures);
             return pic;
         }
-    }
+            }
 
     public void reset() {
         if(picturesList==null)
             picturesList = new ArrayList<>();
         else
             picturesList.clear();
-        picturesList.add(R.drawable.picture1);
-        picturesList.add(R.drawable.picture2);
-        picturesList.add(R.drawable.picture3);
-        picturesList.add(R.drawable.picture4);
-        picturesList.add(R.drawable.picture5);
-        picturesList.add(R.drawable.picture6);
-        picturesList.add(R.drawable.picture7);
-        picturesList.add(R.drawable.picture8);
-        picturesList.add(R.drawable.picture9);
-        picturesList.add(R.drawable.picture10);
-
+        getPicturesFromSD();
         usedPictures.clear();
         setStringArrayPref(Constants.USED_PICTURES_KEY, usedPictures);
     }

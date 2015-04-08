@@ -81,12 +81,13 @@ public class ScreenFragment extends Fragment {
     {
         String uniqueId = getTodaysDate() + "_" + getCurrentTime() + ".png";
 
-        File f = new File(Environment.getExternalStorageDirectory(),
-                Constants.DRAWING_FOLDER);
-        if (!f.exists()) //noinspection ResultOfMethodCallIgnored
-            f.mkdirs();
+        File folder = new File(Environment.getExternalStorageDirectory() +  "/" + Constants.DRAWING_FOLDER + "/" + Constants.OUTCOME_FOLDER);
 
-        File file= new File(Environment.getExternalStorageDirectory()+ "/"+ Constants.DRAWING_FOLDER,uniqueId);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
+        File file= new File(Environment.getExternalStorageDirectory()+ "/"+ Constants.DRAWING_FOLDER + "/" + Constants.OUTCOME_FOLDER,uniqueId);
 
         Bitmap mBitmap =  Bitmap.createBitmap (Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);
 

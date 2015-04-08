@@ -25,6 +25,8 @@ public abstract class Constants {
 
     public static final int DRAWING_TIME = 180;
     public static final String DRAWING_FOLDER = "Imaginary";
+    public static final String OUTCOME_FOLDER = "Outcome";
+    public static final String INCOME_FOLDER = "Patterns";
     public static final String USED_PICTURES_KEY = "PicturesUsedMap";
 
     public static final int TIME_BEFORE_ARROWS_TO_RED_COLL = 15;

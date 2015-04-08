@@ -3,9 +3,13 @@ package com.sociotech.javiert.imaginary.createPictures;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageButton;
@@ -15,7 +19,9 @@ import android.widget.Toast;
 import com.sociotech.javiert.imaginary.Constants;
 import com.sociotech.javiert.imaginary.R;
 
-import java.util.UUID;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Calendar;
 
 /**
  * Drawing App created by Javier Tresaco on 8/04/15.
@@ -38,8 +44,6 @@ public class DrawingActivity extends Activity {
     private ImageButton mNewButton;
 
 
-    private int paint;
-
     private int mSizeWidth;
     private int mSizeHeight;
 
@@ -47,9 +51,6 @@ public class DrawingActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawing);
-
-        //get drawing view
-        drawView = (CustomDrawingView)findViewById(R.id.drawing);
 
         //get the palette and first color button
         LinearLayout paintLayout = (LinearLayout)findViewById(R.id.paint_colors);
@@ -60,7 +61,7 @@ public class DrawingActivity extends Activity {
         mSizeHeight = Constants.HEIGHT;
         //int paint = 0xFF660000;
 
-        drawView = (CustomDrawingView)findViewById(R.id.drawing);
+        drawView = (CustomDrawingView)findViewById(R.id.customDrawing);
         drawView.setSize(mSizeWidth,mSizeHeight);
 
         mStrokeSize = Constants.STROKE_SIZE_MEDIUM;
@@ -72,7 +73,7 @@ public class DrawingActivity extends Activity {
         mSaveButton = (ImageButton) findViewById(R.id.save_btn);
         mNewButton = (ImageButton) findViewById(R.id.new_btn);
 
-        mPaintButton.setBackgroundColor(paint);
+        mPaintButton.setBackgroundColor(Color.parseColor(currPaint.getTag().toString()));
         mPaintButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -160,11 +161,14 @@ public class DrawingActivity extends Activity {
         if(view!=currPaint){
             ImageButton imgView = (ImageButton)view;
             String color = view.getTag().toString();
-            drawView.setColor(color);
+            drawView.setPaint(Color.parseColor(color));
             //update ui
             imgView.setImageDrawable(getResources().getDrawable(R.drawable.paint_pressed));
             currPaint.setImageDrawable(getResources().getDrawable(R.drawable.paint));
             currPaint=(ImageButton)view;
+
+            drawView.setPaintMode();
+            mPaintButton.setBackgroundColor(Color.parseColor(currPaint.getTag().toString()));
         }
     }
 
@@ -193,13 +197,11 @@ public class DrawingActivity extends Activity {
         saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int which){
                 //save drawing
-                drawView.setDrawingCacheEnabled(true);
+                //drawView.setDrawingCacheEnabled(true);
                 //attempt to save
-                String imgSaved = MediaStore.Images.Media.insertImage(
-                        getContentResolver(), drawView.getDrawingCache(),
-                        UUID.randomUUID().toString()+".png", "drawing");
+                boolean imgSaved = saveCanvas();
                 //feedback
-                if(imgSaved!=null){
+                if(imgSaved){
                     Toast savedToast = Toast.makeText(getApplicationContext(),
                             "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
                     savedToast.show();
@@ -209,7 +211,8 @@ public class DrawingActivity extends Activity {
                             "Oops! Image could not be saved.", Toast.LENGTH_SHORT);
                     unsavedToast.show();
                 }
-                drawView.destroyDrawingCache();
+                //drawView.destroyDrawingCache();
+
             }
         });
         saveDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
@@ -220,5 +223,60 @@ public class DrawingActivity extends Activity {
         saveDialog.show();
     }
 
+    private boolean saveCanvas() {
+            String uniqueId = getTodaysDate() + "_" + getCurrentTime() + ".png";
+
+            File folder = new File(Environment.getExternalStorageDirectory() +  "/" + Constants.DRAWING_FOLDER + "/" + Constants.INCOME_FOLDER);
+
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            File file= new File(Environment.getExternalStorageDirectory()+ "/"+ Constants.DRAWING_FOLDER + "/" + Constants.INCOME_FOLDER ,uniqueId);
+
+            Bitmap mBitmap =  Bitmap.createBitmap (Constants.WIDTH, Constants.HEIGHT, Bitmap.Config.RGB_565);
+
+            Canvas canvas = new Canvas(mBitmap);
+            drawView.prepareToSave();
+            try
+            {
+                FileOutputStream mFileOutStream = new FileOutputStream(file);
+                drawView.draw(canvas);
+                mBitmap.compress(Bitmap.CompressFormat.PNG, 100, mFileOutStream);
+                mFileOutStream.flush();
+                mFileOutStream.close();
+                String url = MediaStore.Images.Media.insertImage(getContentResolver(),
+                        Environment.getExternalStorageDirectory()+ "/"+ Constants.DRAWING_FOLDER+ "/" + Constants.INCOME_FOLDER+"/"+uniqueId,uniqueId, null);
+                Log.v("log_tag", "url: " + url);
+                return true;
+
+            }
+            catch(Exception e)
+            {
+                Log.v("log_tag", e.toString());
+                return false;
+            }
+    }
+
+    private String getTodaysDate() {
+
+        final Calendar c = Calendar.getInstance();
+        int todaysDate =     (c.get(Calendar.YEAR) * 10000) +
+                ((c.get(Calendar.MONTH) + 1) * 100) +
+                (c.get(Calendar.DAY_OF_MONTH));
+        Log.w("DATE:",String.valueOf(todaysDate));
+        return(String.valueOf(todaysDate));
+
+    }
+
+    private String getCurrentTime() {
+
+        final Calendar c = Calendar.getInstance();
+        int currentTime =     (c.get(Calendar.HOUR_OF_DAY) * 10000) +
+                (c.get(Calendar.MINUTE) * 100);
+        Log.w("TIME:",String.valueOf(currentTime));
+        return(String.valueOf(currentTime));
+
+    }
 
 }

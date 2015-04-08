@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -41,8 +40,6 @@ public class CustomDrawingView extends View {
     private float mDriftingY;
     private float mOriginalDriftingY;
 
-    private float mLastPaintTouchX;
-    private float mLastPaintTouchY;
 
     private float mLastMovementTouchX;
     private float mLastMovementTouchY;
@@ -55,7 +52,6 @@ public class CustomDrawingView extends View {
     private float mOriginalScaleFactor = 0.0f;
 
     private boolean mPaintMode = true;
-    private boolean mEraseMode = false;
 
     private Rect clipBounds;
     private int mActivePointerId;
@@ -124,7 +120,7 @@ public class CustomDrawingView extends View {
         drawCanvas.drawRect(rectF, paintStroke);
 
         Paint fgPaintSel = new Paint();
-        fgPaintSel.setARGB(255, 0, 0,0);
+        fgPaintSel.setColor(Color.GRAY);
         fgPaintSel.setStyle(Paint.Style.STROKE);
         fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
         drawCanvas.drawLine(w/3, 0, w/3, h, fgPaintSel);
@@ -259,8 +255,6 @@ public class CustomDrawingView extends View {
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
                 drawPath.moveTo(touchX, touchY);
-                mLastPaintTouchX = touchX;
-                mLastPaintTouchY = touchY;
                 mActivePointerId = event.getPointerId(0);
                 break;
             }
@@ -272,8 +266,6 @@ public class CustomDrawingView extends View {
                 touchX = (event.getX(pointerIndex) / mScaleFactor) + clipBounds.left;
                 touchY = (event.getY(pointerIndex) / mScaleFactor) + clipBounds.top;
                 drawPath.lineTo(touchX, touchY);
-                mLastPaintTouchX = touchX;
-                mLastPaintTouchY = touchY;
                 break;
             }
             case MotionEvent.ACTION_UP: {
@@ -293,8 +285,6 @@ public class CustomDrawingView extends View {
                     // This was our active pointer going up. Choose a new
                     // active pointer and adjust accordingly.
                     final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                    mLastPaintTouchX = event.getX(newPointerIndex);
-                    mLastPaintTouchY = event.getY(newPointerIndex);
                     mActivePointerId = event.getPointerId(newPointerIndex);
                 }
                 break;
@@ -304,18 +294,30 @@ public class CustomDrawingView extends View {
         }
     }
 
-
-    //update color
-    public void setColor(String newColor){
-        invalidate();
-        paintColor = Color.parseColor(newColor);
-        drawPaint.setColor(paintColor);
-    }
-
-
     //start new drawing
     public void startNew(){
-        drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
+        int w = Constants.WIDTH;
+        int h = Constants.HEIGHT;
+        drawPath.reset();
+        mScaleFactor = mOriginalScaleFactor;
+        mDriftingX = 0.0f;
+        mDriftingY = mOriginalDriftingY;
+        mMiddleScaleTouchX = 0.0f;
+        mMiddleScaleTouchY = 0.0f;
+        canvasBitmap.eraseColor(android.graphics.Color.TRANSPARENT);
+        canvasBitmap.prepareToDraw();
+        drawCanvas.drawColor(Color.WHITE);
+        Paint fgPaintSel = new Paint();
+        fgPaintSel.setColor(Color.GRAY);
+        fgPaintSel.setStyle(Paint.Style.STROKE);
+        fgPaintSel.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
+        rect = new Rect(0, 0, w, h);
+        rectF = new RectF(rect);
+        drawCanvas.drawLine(w/3, 0, w/3, h, fgPaintSel);
+        drawCanvas.drawLine(2*w/3, 0, 2*w/3, h, fgPaintSel);
+        drawCanvas.drawLine(0, 2*h/3, w, 2*h/3, fgPaintSel);
+        drawCanvas.drawLine(0, h/3, w, h/3, fgPaintSel);
+
         invalidate();
     }
 
@@ -336,7 +338,6 @@ public class CustomDrawingView extends View {
     }
 
     public void setPaintMode() {
-        mEraseMode = false;
         mPaintMode = true;
         mStrokeSize = mOldStrokeSize;
         drawPaint.setColor(paintColor);
@@ -344,7 +345,6 @@ public class CustomDrawingView extends View {
 
     public void setEraseMode() {
         mPaintMode = true;
-        mEraseMode = true;
         if(mStrokeSize != Constants.STROKE_SIZE_ERASE)
             mOldStrokeSize = mStrokeSize;
         mStrokeSize = Constants.STROKE_SIZE_ERASE;
@@ -352,7 +352,6 @@ public class CustomDrawingView extends View {
     }
 
     public void setMovementMode() {
-        mEraseMode = false;
         mPaintMode = false;
     }
 
@@ -360,5 +359,14 @@ public class CustomDrawingView extends View {
         mOldStrokeSize = strokeSize;
         mStrokeSize = strokeSize;
     }
+
+    public void prepareToSave() {
+        Log.d("DrawingApp", "prepareToSave canvas!!! ");
+        mScaleFactor = 1.0f;
+        mDriftingX = 0.0f;
+        mDriftingY = 0.0f;
+        invalidate();
+    }
+
 }
 

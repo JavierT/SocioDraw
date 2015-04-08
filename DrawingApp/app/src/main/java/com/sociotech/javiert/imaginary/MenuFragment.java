@@ -70,7 +70,6 @@ public class MenuFragment extends Fragment {
 
     private void createDrawingActivity() {
         Intent myIntent = new Intent(getActivity(), DrawingActivity.class);
-        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         this.startActivity(myIntent);
         getActivity().finish();
     }

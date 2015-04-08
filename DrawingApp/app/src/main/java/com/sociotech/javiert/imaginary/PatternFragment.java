@@ -2,11 +2,14 @@ package com.sociotech.javiert.imaginary;
 
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,8 +74,10 @@ public class PatternFragment extends Fragment {
         public void changeToDrawingFrag();
     }
 
-    public void setImage(int url) {
-        mImgPattern.setImageResource(url);
+    public void setImage(String url) {
+        url = Environment.getExternalStorageDirectory() +"/" + Constants.DRAWING_FOLDER + "/" + Constants.INCOME_FOLDER + "/" + url;
+        Bitmap image = BitmapFactory.decodeFile(url);
+        mImgPattern.setImageBitmap(image);
     }
 
     public void setArrowsToRed() {

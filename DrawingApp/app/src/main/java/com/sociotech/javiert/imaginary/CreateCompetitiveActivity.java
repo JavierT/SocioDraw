@@ -89,7 +89,7 @@ public class CreateCompetitiveActivity extends FragmentActivity
                     // Optional set name of player in that color.
                     break;
                 case MESSAGE_REMOVE_PLAYER:
-                    Toast.makeText(getApplicationContext(), (String)msg.obj
+                    Toast.makeText(getApplicationContext(), msg.obj
                             + getString(R.string.player_left), Toast.LENGTH_LONG).show();
                     mLobbyFragment.removePlayer((String) msg.obj);
                     break;
@@ -178,7 +178,7 @@ public class CreateCompetitiveActivity extends FragmentActivity
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.purple))),false);
         mColorsAvailable.put(String.format("#%08X", (getResources().getColor(R.color.green))),false);
 
-        mPatternPictures = new Pictures(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        mPatternPictures = new Pictures(this,PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
     }
 
 
