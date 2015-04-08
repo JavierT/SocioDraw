@@ -83,14 +83,14 @@ public class CreateCollaborativeActivity extends FragmentActivity
                 case MESSAGE_COLOR_SELECTED:
                     String name = (String) msg.obj;
                     Toast toast = Toast.makeText(getApplicationContext(), name
-                                                + R.string.colorTake, Toast.LENGTH_SHORT);
+                                                + getString(R.string.colorTake), Toast.LENGTH_SHORT);
                     toast.getView().findViewById(android.R.id.message);
                     mLobbyFragment.updatePlayerColor(name,mCurrentPlayers.get(name).color);
                     // Optional set name of player in that color.
                     break;
                 case MESSAGE_REMOVE_PLAYER:
                     Toast.makeText(getApplicationContext(), (String)msg.obj
-                                    + R.string.player_left, Toast.LENGTH_LONG).show();
+                                    + getString(R.string.player_left), Toast.LENGTH_LONG).show();
                     mLobbyFragment.removePlayer((String) msg.obj);
                     break;
                 case MESSAGE_SET_GAME_READY:
@@ -273,11 +273,11 @@ public class CreateCollaborativeActivity extends FragmentActivity
         }
         else
             myProgressDialog.setTitle(R.string.startGameTitle);
-        myProgressDialog.setMessage(getString(R.string.startGameDesc) + String.format(" %d ",Constants.countdownTimer) + getString(R.string.seconds) +"...");
+        myProgressDialog.setMessage(getString(R.string.startGameDesc) + String.format(" %d ",Constants.WAITING_TIME) + getString(R.string.seconds) +"...");
         myProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         myProgressDialog.show();
-        mSecondsRemaining = Constants.countdownTimer;
-        new CountDownTimer(Constants.countdownTimer*1000, 1000) {
+        mSecondsRemaining = Constants.WAITING_TIME;
+        new CountDownTimer(Constants.WAITING_TIME *1000, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 mSecondsRemaining--;

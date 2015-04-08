@@ -37,6 +37,7 @@ public class Pictures {
         picturesList.add(R.drawable.picture8);
         picturesList.add(R.drawable.picture9);
         picturesList.add(R.drawable.picture10);
+        picturesList.add(R.drawable.picture11);
 
         usedPictures = getStringArrayPref(Constants.USED_PICTURES_KEY);
         if(usedPictures != null && !usedPictures.isEmpty()) {

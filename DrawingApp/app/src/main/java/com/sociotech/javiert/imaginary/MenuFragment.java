@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.sociotech.javiert.imaginary.createPictures.DrawingActivity;
+
 /**
  * Drawing App created by Javier Tresaco on 2/02/15.
  * ${PACKAGE_NAME}
@@ -54,7 +56,23 @@ public class MenuFragment extends Fragment {
                 mCallback.openCreateOptionsFragment();
             }
         });
+
+        Button btnDrawing = (Button) rootView.findViewById(R.id.btnDrawing);
+        btnDrawing.setTypeface((MainActivity.handwritingFont));
+        btnDrawing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createDrawingActivity();
+            }
+        });
         return rootView;
+    }
+
+    private void createDrawingActivity() {
+        Intent myIntent = new Intent(getActivity(), DrawingActivity.class);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        this.startActivity(myIntent);
+        getActivity().finish();
     }
 
     private void joinGame() {

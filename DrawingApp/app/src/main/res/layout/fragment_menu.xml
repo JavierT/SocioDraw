@@ -35,7 +35,7 @@
             android:id="@+id/btnJoin"
             android:background="@mipmap/paper_style"
             android:layout_gravity="center"
-            android:layout_weight="1"
+            android:layout_weight="1.5"
             android:layout_margin="25dp" />
 
         <Button
@@ -45,7 +45,17 @@
             android:id="@+id/btnCreate"
             android:background="@mipmap/paper_style"
             android:layout_gravity="center"
-            android:layout_weight="1"
+            android:layout_weight="1.5"
+            android:layout_margin="25dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Create drawing"
+            android:id="@+id/btnDrawing"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="0.5"
             android:layout_margin="25dp" />
     </LinearLayout>
 

@@ -25,7 +25,7 @@
     <string name="lobby_player">Players:</string>
     <string name="lobby_exit">Exit</string>
     <string name="join_Ready">Click here once you are ready</string>
-    <string name="join_NotReady">Wait!, I want to change my color</string>
+    <string name="join_NotReady">Go back to color selection</string>
     <string name="lobby_Start">Start Game</string>
     <string name="join">You have joined the game</string>
 

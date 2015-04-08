@@ -691,6 +691,9 @@ public class JoinActivity extends FragmentActivity
                     try {
                         int countdown = mDrawingInterface.getLobbyStatus();
                         if(countdown > 0) {
+                            if(countdown > Constants.WAITING_TIME) {
+                                countdown = 0;
+                            }
                             setTimerToStart(countdown, firstTime);
                             // Clear the drawing if it is not the first time for the next
                             // round. We clean after the timer for the next game is been
