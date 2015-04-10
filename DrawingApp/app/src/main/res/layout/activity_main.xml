@@ -2,24 +2,10 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:orientation="vertical"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-
-    <FrameLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="69dp"
-        tools:context=".MainActivity"
-        tools:ignore="MergeRootFrame" >
-    </FrameLayout>
-
-    <FrameLayout
+        android:layout_height="fill_parent"
         android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        tools:context=".MainActivity"
-        tools:ignore="MergeRootFrame" >
-    </FrameLayout>
+        tools:context="com.sociotech.javiert.imaginary.MainActivity">
+
 
 </LinearLayout>
 

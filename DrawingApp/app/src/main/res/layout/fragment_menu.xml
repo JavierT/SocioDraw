@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#698de3f1"
+    android:paddingTop="15dp"
+    android:paddingBottom="35dp"
+
+>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center|left"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/welcome"
+        android:id="@+id/txtWelcome"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="25dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Join group"
+            android:id="@+id/btnJoin"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="1.5"
+            android:layout_margin="25dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Create group"
+            android:id="@+id/btnCreate"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="1.5"
+            android:layout_margin="25dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Create drawing"
+            android:id="@+id/btnDrawing"
+            android:background="@mipmap/paper_style"
+            android:layout_gravity="center"
+            android:layout_weight="0.5"
+            android:layout_margin="25dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,40 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:id="@+id/drawingContainer"
+    tools:context="com.sociotech.javiert.imaginary.JoinActivity"
+    android:background="#32329e5f">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="right"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_gravity="left|center"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/txtJoin"
+            android:text="@string/join"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:layout_marginTop="5dp" />
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="30dp"
+            android:id="@+id/ic_timeout"
+            android:layout_gravity="right"
+            android:src="@drawable/ic_clock1" />
+
+
+    </LinearLayout>
+
+</LinearLayout>
