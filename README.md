@@ -1,11 +1,13 @@
 # SocioDraw
-Android app to connect several devices under the same wireless network.
+Android drawing game to connect several devices under the same wireless network.
 
 Android min required version: 4.0
 
 Framework used: Alljoyn https://allseenalliance.org/framework
 
 The application interconnect multiple android devices to allow play a drawing game. One devices acts as a server creating the game and the others join. The game is limited to 6 players due to playability but the connection can hold more than 6 players. 
+
+![alt game_image](https://writelatex.s3.amazonaws.com/filepicker/y58udsPNSZyi69raHFkN_collaborative.PNG)
 
 Devices must be connected under the same wireless network. This network does not require internet access. Another device can be used as a private hostpot.
 
