@@ -7,8 +7,6 @@ Framework used: Alljoyn https://allseenalliance.org/framework
 
 The application interconnect multiple android devices to allow play a drawing game. One devices acts as a server creating the game and the others join. The game is limited to 6 players due to playability but the connection can hold more than 6 players. 
 
-![alt game_image](https://writelatex.s3.amazonaws.com/filepicker/y58udsPNSZyi69raHFkN_collaborative.PNG)
-
 Devices must be connected under the same wireless network. This network does not require internet access. Another device can be used as a private hostpot.
 
 Two game modes: Collaborative and competitive.
@@ -26,7 +24,7 @@ Drawing time is limited to 3 minutes.
 There is not score, players must decide the best picture in the competitive mode. The collaborative mode is a team-work activity where players must coordinate to achieve the best outcome possible. 
 
 A user study and more detailed information can be found here: 
-http://dspace.cc.tut.fi/dpub/handle/123456789/23787
+https://drive.google.com/file/d/0B1EVYDO8DTPVWnJEZXlMZjNabFE/view
 
 Feel free to contact me if you find it interesting!
 contact@javiertresaco.com
